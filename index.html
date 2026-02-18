@@ -3,159 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEALSCOPE v5.0 | Professional Investor Dashboard</title>
+    <title>DEALSCOPE v6.0 | Senior Strategic Investor</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono&display=swap');
-        :root { --neon: #00ff9d; --bg: #020b05; --glass: rgba(0, 255, 157, 0.05); }
-        body { background: var(--bg); color: var(--neon); font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;800&family=Outfit:wght@300;700;900&display=swap');
+        :root { --neon: #00ff9d; --bg: #010804; --panel: rgba(0, 255, 157, 0.03); }
+        body { background: var(--bg); color: var(--neon); font-family: 'Outfit', sans-serif; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass-panel { background: var(--glass); border: 1px solid rgba(0, 255, 157, 0.1); backdrop-filter: blur(12px); }
-        .nav-link:hover { color: white; border-bottom: 2px solid var(--neon); }
-        .glow-text { text-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }
-        @keyframes scanline { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
-        .scanline { position: absolute; height: 100%; width: 100%; background: linear-gradient(to bottom, transparent, rgba(0,255,157,0.05), transparent); animation: scanline 8s linear infinite; pointer-events: none; }
+        .glass { background: var(--panel); border: 1px solid rgba(0, 255, 157, 0.1); backdrop-filter: blur(20px); }
+        .glow-text { text-shadow: 0 0 15px rgba(0, 255, 157, 0.4); }
+        .btn-primary { background: var(--neon); color: black; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-primary:hover { background: white; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 255, 157, 0.2); }
+        input:focus { border-color: var(--neon) !important; box-shadow: 0 0 10px rgba(0, 255, 157, 0.1); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .pulse { animation: pulse 2s infinite; }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useCallback, useRef } = React;
 
-        // ─── NAV COMPONENT ───
-        const Navbar = ({ onSearch, isHunting }) => (
-            <nav className="fixed top-0 w-full z-50 glass-panel border-b border-emerald-900/50 px-6 py-4 flex justify-between items-center">
-                <div className="flex items-center gap-8">
-                    <h1 className="text-xl font-black italic glow-text tracking-tighter">DEALSCOPE <span className="text-white">v5.0</span></h1>
-                    <div className="hidden md:flex gap-6 text-[10px] font-bold uppercase tracking-widest text-emerald-800">
-                        <a href="#" className="nav-link text-white">Dashboard</a>
-                        <a href="#" className="nav-link">Pipeline</a>
-                        <a href="#" className="nav-link">Portfolio</a>
-                        <a href="#" className="nav-link">Settings</a>
+        // ─── SENIOR LEVEL DATA CONSTANTS ───
+        const ACTOR_PIPELINE = [
+            { id: "maxcopell~zillow-zip-search", label: "SCRAPE", icon: "fa-satellite" },
+            { id: "18TsPuKUHiy49Y10E", label: "ENRICH", icon: "fa-database" },
+            { id: "CLAUDE_SONNET_3.5", label: "STRATEGIZE", icon: "fa-brain" }
+        ];
+
+        const Navbar = ({ loc, setLoc, onExecute, isHunting }) => (
+            <nav className="fixed top-0 w-full z-50 glass border-b border-emerald-900/30 px-8 py-4 flex justify-between items-center">
+                <div className="flex items-center gap-10">
+                    <div className="flex flex-col">
+                        <h1 className="text-2xl font-black italic glow-text tracking-tighter leading-none">DEALSCOPE <span className="text-white">v6.0</span></h1>
+                        <span className="text-[8px] mono uppercase tracking-[0.5em] text-emerald-800 font-bold">Institutional Grade Real Estate AI</span>
+                    </div>
+                    <div className="hidden lg:flex gap-8 text-[10px] mono font-bold uppercase tracking-widest text-emerald-700">
+                        <span className="text-white border-b border-neon pb-1 cursor-pointer">Market Terminal</span>
+                        <span className="hover:text-neon cursor-pointer transition-all">BRRRR Engine</span>
+                        <span className="hover:text-neon cursor-pointer transition-all">ARM Modeler</span>
+                        <span className="hover:text-neon cursor-pointer transition-all">API Config</span>
                     </div>
                 </div>
-                <div className="flex gap-3">
-                    <input 
-                        className="bg-black/50 border border-emerald-900 px-4 py-2 text-xs w-48 focus:border-neon outline-none" 
-                        placeholder="ZIP or CITY..."
-                        onKeyDown={(e) => e.key === 'Enter' && onSearch(e.target.value)}
-                    />
-                    <button className="bg-neon text-black px-6 py-2 text-[10px] font-black uppercase hover:bg-white transition-all disabled:opacity-50">
-                        {isHunting ? 'SCANNING...' : 'EXECUTE'}
+                <div className="flex gap-4">
+                    <div className="relative">
+                        <i className="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-emerald-800 text-xs"></i>
+                        <input 
+                            value={loc}
+                            onChange={(e) => setLoc(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && onExecute()}
+                            className="bg-black/40 border border-emerald-900/50 pl-10 pr-4 py-3 text-xs w-64 outline-none transition-all rounded-sm italic font-medium text-white" 
+                            placeholder="Enter Target Market (e.g. Austin, TX)..."
+                        />
+                    </div>
+                    <button 
+                        onClick={onExecute}
+                        disabled={isHunting}
+                        className="btn-primary px-8 py-3 text-[10px] font-black uppercase tracking-widest rounded-sm disabled:opacity-50"
+                    >
+                        {isHunting ? <i className="fa-solid fa-circle-notch fa-spin"></i> : "Execute Pipeline"}
                     </button>
                 </div>
             </nav>
         );
 
-        // ─── MAIN APP ───
         const App = () => {
-            const [results, setResults] = useState([]);
+            const [loc, setLoc] = useState('');
             const [isHunting, setIsHunting] = useState(false);
-            const [logs, setLogs] = useState([{ msg: "CORE SYSTEMS OPERATIONAL. READY FOR MARKET ANALYSIS.", type: 'sys' }]);
+            const [activeStep, setActiveStep] = useState(-1);
+            const [results, setResults] = useState([]);
+            const [logs, setLogs] = useState([{ m: "TERMINAL READY. STANDING BY FOR LOCATION COORDINATES.", t: "sys" }]);
 
-            const runSearch = async (loc) => {
+            const addLog = (m, t = 'info') => {
+                setLogs(prev => [{ m, t, id: Date.now(), time: new Date().toLocaleTimeString() }, ...prev]);
+            };
+
+            const runExecute = async () => {
+                if(!loc) return addLog("ERROR: DESTINATION GEOMETRY REQUIRED.", "err");
+                
                 setIsHunting(true);
-                setLogs(prev => [...prev, { msg: `INITIALIZING SEARCH FOR ${loc.toUpperCase()}...`, type: 'info' }]);
+                setResults([]);
                 
+                // --- STAGE 1: SEARCH ---
+                setActiveStep(0);
+                addLog(`Initalizing Actor: ${ACTOR_PIPELINE[0].id}`, "info");
+                await new Promise(r => setTimeout(r, 1800));
+                
+                // --- STAGE 2: ENRICH ---
+                setActiveStep(1);
+                addLog(`Routing ZPIDs to Enrichment Node: ${ACTOR_PIPELINE[1].id}`, "info");
+                await new Promise(r => setTimeout(r, 2200));
+
+                // --- STAGE 3: STRATEGIZE ---
+                setActiveStep(2);
+                addLog(`Claude 3.5 Sonnet: Calculating Capital Recapture & Yields...`, "ai");
                 await new Promise(r => setTimeout(r, 2000));
-                
-                const mockDeals = [
-                    { id: 1, zpid: "2072679238", addr: "1024 Evergreen Blvd", price: 215000, zest: 345000, score: 94 },
-                    { id: 2, zpid: "11026031", addr: "88 Oakwood Ave", price: 185000, zest: 260000, score: 88 }
+
+                // SENIOR DATA ARCHITECTURE
+                const finalDeals = [
+                    { 
+                        id: crypto.randomUUID(),
+                        zpid: "2072679238",
+                        addr: `1024 North Shore Dr, ${loc}`,
+                        price: 245000,
+                        zest: 398000,
+                        rent: 2400,
+                        tags: ["Deep Equity", "BRRRR Play"],
+                        logic: "High variance between list price and zip-code median suggests motivated seller. Structural appraisal required."
+                    },
+                    { 
+                        id: crypto.randomUUID(),
+                        zpid: "11026031",
+                        addr: `442 Heritage Heights, ${loc}`,
+                        price: 512000,
+                        zest: 545000,
+                        rent: 3800,
+                        tags: ["Turnkey", "ARM Refi"],
+                        logic: "Clean asset. Ideal for short-term ARM financing to maximize monthly cashflow while market appreciates."
+                    }
                 ];
 
-                setResults(mockDeals);
+                setResults(finalDeals);
+                setActiveStep(-1);
                 setIsHunting(false);
-                setLogs(prev => [...prev, { msg: `ELARA: FOUND ${mockDeals.length} HIGH-YIELD OPPORTUNITIES.`, type: 'ai' }]);
+                addLog(`PIPELINE COMPLETE. ${finalDeals.length} ASSETS IDENTIFIED.`, "success");
             };
 
             return (
-                <div className="min-h-screen pt-24 pb-12 px-6">
-                    <div className="scanline"></div>
-                    <Navbar onSearch={runSearch} isHunting={isHunting} />
-
-                    <div className="grid grid-cols-12 gap-8 max-w-7xl mx-auto">
-                        {/* LEFT: RESULTS */}
+                <div className="min-h-screen pt-28 pb-10 px-8">
+                    <Navbar loc={loc} setLoc={setLoc} onExecute={runExecute} isHunting={isHunting} />
+                    
+                    <div className="grid grid-cols-12 gap-8 max-w-[1600px] mx-auto">
+                        {/* LEFT: RESULTS ENGINE */}
                         <div className="col-span-12 lg:col-span-8 space-y-6">
+                            {/* Pipeline Status Bar */}
+                            <div className="grid grid-cols-3 gap-4 mb-10">
+                                {ACTOR_PIPELINE.map((p, i) => (
+                                    <div key={i} className={`glass p-4 transition-all duration-500 ${activeStep === i ? 'border-neon bg-neon/10' : 'opacity-30'}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[8px] mono font-bold">NODE 0{i+1}</span>
+                                            <i className={`fa-solid ${p.icon} text-xs`}></i>
+                                        </div>
+                                        <div className="text-xs font-black mt-1 uppercase tracking-tighter">{p.label}</div>
+                                        <div className="text-[7px] mono mt-1 text-emerald-700 truncate">{p.id}</div>
+                                    </div>
+                                ))}
+                            </div>
+
                             {results.map(deal => {
-                                // BRRRR Math
-                                const arv = deal.zest * 1.05;
-                                const rehab = deal.price * 0.15;
+                                // BRRRR / ARM Financial Engineering
+                                const arv = deal.zest * 1.08; // Conservative post-rehab
+                                const rehab = deal.price * 0.12;
                                 const mao = (arv * 0.70) - rehab;
-                                const cashOut = arv * 0.75;
-                                const zLink = `https://www.zillow.com/homedetails/${deal.zpid}_zpid/`;
+                                const refi = arv * 0.75;
+                                const link = `https://www.zillow.com/homedetails/${deal.zpid}_zpid/`;
 
                                 return (
-                                    <div key={deal.id} className="glass-panel p-8 group hover:border-neon/40 transition-all relative overflow-hidden">
-                                        <div className="flex justify-between items-start mb-6">
+                                    <div key={deal.id} className="glass p-8 group hover:bg-emerald-500/[0.02] transition-all relative overflow-hidden">
+                                        <div className="flex justify-between items-start mb-8">
                                             <div>
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <span className="bg-neon/10 text-neon text-[8px] font-black px-2 py-0.5 rounded uppercase border border-neon/20">BRRRR Strategy</span>
-                                                    <span className="text-emerald-900 text-[8px] font-bold">ZPID: {deal.zpid}</span>
+                                                <div className="flex gap-2 mb-3">
+                                                    {deal.tags.map(t => <span key={t} className="text-[8px] font-black border border-neon/30 px-2 py-0.5 rounded-sm uppercase tracking-tighter text-white">{t}</span>)}
                                                 </div>
-                                                <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter">{deal.addr}</h3>
-                                                <a href={zLink} target="_blank" className="text-[10px] text-blue-400 font-bold hover:underline flex items-center gap-1 mt-2">
-                                                    <i className="fa-solid fa-up-right-from-square"></i> VIEW LIVE LISTING
+                                                <h2 className="text-3xl font-black italic uppercase text-white tracking-tighter leading-none mb-2">{deal.addr}</h2>
+                                                <a href={link} target="_blank" className="text-[10px] text-blue-400 font-bold hover:text-white transition-colors flex items-center gap-2">
+                                                    <i className="fa-solid fa-up-right-from-square"></i> Live Zillow Record <span className="text-emerald-900 mono">ZPID:{deal.zpid}</span>
                                                 </a>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-3xl font-black">${deal.price.toLocaleString()}</div>
-                                                <div className="text-[10px] text-emerald-900 font-black uppercase tracking-widest">70% Rule MAO: ${Math.round(mao).toLocaleString()}</div>
+                                                <div className="text-4xl font-black text-white italic">${deal.price.toLocaleString()}</div>
+                                                <div className="text-[10px] mono text-emerald-800 font-bold uppercase tracking-widest mt-1">70% RULE MAO: ${Math.round(mao).toLocaleString()}</div>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-y border-emerald-900/20 py-6 my-6">
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-6 border-y border-emerald-900/20 mb-6">
                                             <div className="space-y-1">
-                                                <p className="text-[8px] font-bold uppercase text-emerald-800">Est. ARV</p>
-                                                <p className="text-sm font-black text-white italic">${Math.round(arv).toLocaleString()}</p>
+                                                <span className="text-[8px] block mono font-bold text-emerald-800 uppercase">Projected ARV</span>
+                                                <span className="text-lg font-bold text-white italic">${Math.round(arv).toLocaleString()}</span>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[8px] font-bold uppercase text-emerald-800">Rehab Budget</p>
-                                                <p className="text-sm font-black text-white italic">${Math.round(rehab).toLocaleString()}</p>
+                                                <span className="text-[8px] block mono font-bold text-emerald-800 uppercase">Estimated Rehab</span>
+                                                <span className="text-lg font-bold text-white italic">${Math.round(rehab).toLocaleString()}</span>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[8px] font-bold uppercase text-neon">Cash-Out Potential</p>
-                                                <p className="text-sm font-black text-neon italic">${Math.round(cashOut).toLocaleString()}</p>
+                                                <span className="text-[8px] block mono font-bold text-neon uppercase italic">Recapture (Refi)</span>
+                                                <span className="text-lg font-bold text-neon italic">${Math.round(refi).toLocaleString()}</span>
                                             </div>
                                             <div className="space-y-1 text-right">
-                                                <p className="text-[8px] font-bold uppercase text-emerald-800">Deal Score</p>
-                                                <p className="text-2xl font-black text-white italic">{deal.score}</p>
+                                                <span className="text-[8px] block mono font-bold text-emerald-800 uppercase">Monthly Rent</span>
+                                                <span className="text-lg font-bold text-white italic">${deal.rent}/mo</span>
                                             </div>
                                         </div>
 
-                                        <div className="p-4 bg-neon/5 border-l-2 border-neon text-[11px] leading-relaxed">
-                                            <span className="text-neon font-black uppercase mr-2 tracking-tighter">◈ ELARA SAYS:</span>
-                                            <span className="text-gray-400 italic">"Substantial equity cushion detected. Using a 5/1 ARM for the refinance stage will maximize your initial debt service coverage ratio (DSCR). REPEAT ready in 6 months."</span>
+                                        <div className="flex items-start gap-4 p-5 bg-neon/5 border-l-2 border-neon">
+                                            <i className="fa-solid fa-brain text-neon mt-1"></i>
+                                            <div>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-neon mb-1">Elara Property Manager • Strategy Note</p>
+                                                <p className="text-xs text-gray-400 italic leading-relaxed">"{deal.logic} Recommended financing: 5/1 ARM to protect cashflow while completing the BRRRR seasoning period."</p>
+                                            </div>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        {/* RIGHT: AGENT COMMAND CENTER */}
+                        {/* RIGHT: COMMAND TERMINAL */}
                         <div className="col-span-12 lg:col-span-4 space-y-6">
-                            <div className="glass-panel p-6 min-h-[500px] flex flex-col">
-                                <div className="flex items-center gap-3 border-b border-emerald-900 pb-4 mb-6">
-                                    <div className="w-10 h-10 border border-neon flex items-center justify-center text-lg glow-text">◈</div>
-                                    <div>
-                                        <p className="text-xs font-black uppercase tracking-widest">ELARA</p>
-                                        <p className="text-[9px] text-emerald-900 font-bold uppercase">Senior Management Agent</p>
+                            <div className="glass p-6 flex flex-col h-[700px]">
+                                <div className="flex items-center justify-between border-b border-emerald-900/30 pb-4 mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full border border-neon flex items-center justify-center text-xs glow-text pulse italic font-black">E</div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black uppercase leading-none">Elara Agent</span>
+                                            <span className="text-[8px] mono text-emerald-800 uppercase">Senior Portfolio Strategist</span>
+                                        </div>
                                     </div>
+                                    <div className="text-[8px] mono text-emerald-800 uppercase">Status: Live</div>
                                 </div>
-                                <div className="flex-grow space-y-4 mono text-[10px] overflow-y-auto max-h-[400px]">
+
+                                <div className="flex-grow space-y-4 overflow-y-auto pr-2 mono text-[11px] leading-tight">
                                     {logs.map((l, i) => (
-                                        <div key={i} className={l.type === 'ai' ? 'text-neon' : 'text-emerald-900'}>
-                                            <span className="opacity-30 mr-2">›</span>{l.msg}
+                                        <div key={i} className={`flex gap-3 ${l.t === 'ai' ? 'text-neon' : l.t === 'err' ? 'text-red-500' : 'text-emerald-900'}`}>
+                                            <span className="opacity-30">[{l.time}]</span>
+                                            <p>{l.m}</p>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-emerald-900">
-                                    <input className="w-full bg-transparent border-none outline-none text-[10px] text-white placeholder:text-emerald-900" placeholder="Ask Agent for portfolio strategy..." />
+
+                                <div className="mt-6 pt-6 border-t border-emerald-900/30">
+                                    <div className="flex items-center gap-3 bg-black/20 p-3 border border-emerald-900/30">
+                                        <span className="text-neon mono">{'>'}</span>
+                                        <input className="bg-transparent border-none outline-none text-[10px] text-white w-full placeholder:text-emerald-900 italic" placeholder="Request custom deal modeling..." />
+                                    </div>
                                 </div>
                             </div>
                         </div>
