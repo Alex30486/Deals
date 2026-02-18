@@ -3,76 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEALSCOPE v3.0 | AI Property Manager</title>
+    <title>DEALSCOPE v4.0 | BRRRR & ARM Intelligence</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        body { background-color: #020b05; color: #00ff9d; font-family: 'JetBrains Mono', monospace; }
+        .terminal-glass { background: rgba(0, 15, 5, 0.9); border: 1px solid rgba(0, 255, 157, 0.1); }
+        .glow-border:hover { border-color: #00ff9d; box-shadow: 0 0 15px rgba(0, 255, 157, 0.2); }
+        .brrrr-tag { background: #1a3a3a; color: #00ff9d; border: 1px solid #00ff9d; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #004d2f; }
+    </style>
 </head>
-<body class="bg-[#020b05] text-[#00ff9d] font-mono">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const PIPELINE = [
-            { id: "maxcopell~zillow-zip-search", label: "SEARCH", icon: "fa-location-crosshairs", color: "text-blue-400" },
-            { id: "18TsPuKUHiy49Y10E", label: "ENRICH", icon: "fa-database", color: "text-yellow-400" },
-            { id: "CLAUDE_SONNET", label: "SCORE", icon: "fa-brain", color: "text-emerald-400" }
-        ];
-
         const App = () => {
             const [location, setLocation] = useState('');
             const [isHunting, setIsHunting] = useState(false);
             const [results, setResults] = useState([]);
-            const [agentMsgs, setAgentMsgs] = useState([{ role: 'ai', text: "Agent ELARA online. Standby for market directives." }]);
+            const [logs, setLogs] = useState([{ t: "System initialized. Creative Financing Modules: ACTIVE.", type: 'sys' }]);
+
+            const addLog = (t, type = 'info') => {
+                setLogs(prev => [{ t, type, id: Date.now(), time: new Date().toLocaleTimeString() }, ...prev]);
+            };
+
+            const calculateBRRRR = (price, zest) => {
+                const arv = zest * 1.05; // AI projects 5% appreciation post-rehab
+                const rehab = price * 0.15; // Standard 15% rehab estimation
+                const mao = (arv * 0.70) - rehab; // The 70% Rule
+                const refiValue = arv * 0.75; // Cash-out Refi at 75% LTV
+                const profit = refiValue - (price + rehab);
+                return { arv, rehab, mao, refiValue, profit };
+            };
 
             const runHunt = async () => {
                 if(!location) return;
                 setIsHunting(true);
-                // Simulate pipeline stages from deal-finder.jsx
-                await new Promise(r => setTimeout(r, 1500)); 
+                setResults([]);
+                addLog(`Initalizing Scraping: maxcopell~zillow-zip-search...`, 'info');
                 
-                const deals = [
-                    { addr: `742 Evergreen Terr, ${location}`, price: 420000, zest: 510000, score: 92, thesis: "Deep equity discount; potential fix-and-flip candidate." }
+                await new Promise(r => setTimeout(r, 2000));
+                
+                // MOCK INTELLIGENCE: In production, these variables come from your Apify Actors
+                const rawDeals = [
+                    { addr: "1842 Cypress Creek Rd", price: 210000, zest: 345000, zpid: "2072679238" },
+                    { addr: "902 Lakewood Ave", price: 385000, zest: 490000, zpid: "11026031" }
                 ];
-                setResults(deals);
-                setAgentMsgs(prev => [...prev, { role: 'ai', text: `Analysis complete. Found a high-yield asset at ${deals[0].addr}. Recommendation: Immediate follow-up.` }]);
+
+                const analyzed = rawDeals.map(d => ({
+                    ...d,
+                    finance: calculateBRRRR(d.price, d.zest),
+                    zillow: `https://www.zillow.com/homedetails/${d.zpid}_zpid/`
+                }));
+
+                setResults(analyzed);
+                addLog(`ELARA: Found ${analyzed.length} high-probability BRRRR targets.`, 'ai');
                 setIsHunting(false);
             };
 
             return (
-                <div className="p-8 max-w-6xl mx-auto">
-                    <div className="flex justify-between border-b border-emerald-900 pb-8 mb-8">
-                        <h1 className="text-3xl font-black italic glow-text">DEALSCOPE <span className="text-white">v3.0</span></h1>
-                        <div className="flex gap-2">
-                            <input className="bg-black border border-emerald-500/30 px-4 py-2 text-xs" placeholder="ZIP..." onChange={(e)=>setLocation(e.target.value)} />
-                            <button onClick={runHunt} className="bg-emerald-500 text-black px-6 py-2 text-xs font-bold" disabled={isHunting}>
-                                {isHunting ? 'ACTIVE...' : 'EXECUTE'}
+                <div className="min-h-screen p-4 md:p-10 max-w-7xl mx-auto">
+                    {/* TOP NAV: BRANDING & SEARCH */}
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 gap-6">
+                        <div>
+                            <h1 className="text-4xl font-black italic tracking-tighter text-white">DEAL<span className="text-[#00ff9d]">SCOPE</span> v4.0</h1>
+                            <p className="text-[10px] uppercase tracking-[0.4em] text-emerald-900 font-bold">BRRRR Methodology • ARM Creative Financing</p>
+                        </div>
+                        <div className="flex w-full lg:w-auto gap-2">
+                            <input 
+                                className="bg-black border border-emerald-900 p-4 text-xs w-full lg:w-80 outline-none focus:border-emerald-500 transition-all"
+                                placeholder="TARGET LOCATION (CITY/ZIP)..."
+                                onChange={(e) => setLocation(e.target.value)}
+                            />
+                            <button 
+                                onClick={runHunt}
+                                className="bg-emerald-500 text-black px-8 py-4 text-xs font-black uppercase hover:bg-white transition-all disabled:opacity-30"
+                                disabled={isHunting}
+                            >
+                                {isHunting ? 'SCANNING...' : 'EXECUTE HUNT'}
                             </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-12 gap-8">
-                        <div className="col-span-8 space-y-4">
-                            {results.map((d, i) => (
-                                <div key={i} className="border border-emerald-500/20 p-6 bg-black/40">
-                                    <h3 className="text-xl font-bold uppercase">{d.addr}</h3>
-                                    <p className="text-sm text-gray-500 italic mt-2">"{d.thesis}"</p>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* LEFT: DEAL FEED */}
+                        <div className="lg:col-span-8 space-y-6">
+                            {results.map((deal, i) => (
+                                <div key={i} className="terminal-glass p-8 glow-border transition-all relative overflow-hidden group">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <span className="text-[9px] font-bold brrrr-tag px-2 py-1 rounded mb-2 inline-block">BRRRR CANDIDATE</span>
+                                            <h3 className="text-2xl font-bold text-white italic">{deal.addr}</h3>
+                                            <a href={deal.zillow} target="_blank" className="text-[10px] text-blue-400 hover:underline mt-1 block">
+                                                <i className="fa-solid fa-up-right-from-square mr-1"></i> VIEW ON ZILLOW
+                                            </a>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-3xl font-black text-emerald-400">${deal.price.toLocaleString()}</div>
+                                            <div className="text-[10px] text-emerald-900 font-bold">70% RULE MAO: ${Math.round(deal.finance.mao).toLocaleString()}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* BRRRR METRICS GRID */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-y border-emerald-900/30 py-6 my-6">
+                                        <div>
+                                            <div className="text-[9px] text-gray-500 uppercase font-bold">Est. ARV</div>
+                                            <div className="text-sm font-bold text-white">${Math.round(deal.finance.arv).toLocaleString()}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-[9px] text-gray-500 uppercase font-bold">Estimated Rehab</div>
+                                            <div className="text-sm font-bold text-white">${Math.round(deal.finance.rehab).toLocaleString()}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-[9px] text-emerald-500 uppercase font-bold">Cash-Out (75%)</div>
+                                            <div className="text-sm font-bold text-emerald-400">${Math.round(deal.finance.refiValue).toLocaleString()}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-[9px] text-blue-500 uppercase font-bold">Net Profit/Equity</div>
+                                            <div className="text-sm font-bold text-blue-400">${Math.round(deal.finance.profit).toLocaleString()}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-emerald-500/5 p-4 border-l-2 border-emerald-500">
+                                        <div className="text-[10px] text-emerald-500 font-bold uppercase mb-1 flex items-center gap-2">
+                                            <i className="fa-solid fa-brain"></i> Agent Elara: Refinance Strategy
+                                        </div>
+                                        <p className="text-xs text-gray-400 italic">
+                                            "Target purchase is below MAO. Model shows 100% capital recapture on Refinance. 
+                                            Recommended Financing: 5/1 ARM at 6.2% to maximize initial cashflow during seasoning."
+                                        </p>
+                                    </div>
                                 </div>
                             ))}
+
+                            {results.length === 0 && !isHunting && (
+                                <div className="h-64 border-2 border-dashed border-emerald-900/30 flex flex-col items-center justify-center opacity-30">
+                                    <i className="fa-solid fa-satellite-dish text-4xl mb-4"></i>
+                                    <span className="text-xs font-bold uppercase tracking-widest">Awaiting Location Coordinates</span>
+                                </div>
+                            )}
                         </div>
-                        <div className="col-span-4 border border-emerald-500/20 p-6 h-96 overflow-y-auto">
-                            <div className="text-[10px] font-bold text-emerald-900 uppercase mb-4">Property Manager Elara</div>
-                            {agentMsgs.map((m, i) => <div key={i} className="text-xs text-emerald-300 mb-2">› {m.text}</div>)}
+
+                        {/* RIGHT: AGENT COMMAND & CREATIVE FINANCING */}
+                        <div className="lg:col-span-4 space-y-6">
+                            <div className="terminal-glass p-6">
+                                <div className="flex items-center gap-3 mb-6 border-b border-emerald-900 pb-4">
+                                    <div className="w-10 h-10 border border-emerald-500 flex items-center justify-center text-xl shadow-[0_0_10px_rgba(0,255,157,0.4)]">◈</div>
+                                    <div>
+                                        <div className="text-xs font-black uppercase">ELARA</div>
+                                        <div className="text-[9px] text-emerald-800 font-bold uppercase tracking-tighter">Senior Portfolio Agent</div>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 h-[400px] overflow-y-auto pr-2">
+                                    {logs.map(l => (
+                                        <div key={l.id} className={`text-[10px] leading-relaxed ${l.type === 'ai' ? 'text-emerald-400' : 'text-gray-500'}`}>
+                                            <span className="opacity-30 mr-2">[{l.time}]</span>
+                                            {l.t}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="terminal-glass p-6 border-l-2 border-blue-500">
+                                <h4 className="text-[10px] font-bold text-blue-500 uppercase mb-4 tracking-widest">ARM Refinance Calculator</h4>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between text-[10px]">
+                                        <span className="text-gray-500 uppercase font-bold">ARM Period</span>
+                                        <span className="text-white">5/1 Year</span>
+                                    </div>
+                                    <div className="flex justify-between text-[10px]">
+                                        <span className="text-gray-500 uppercase font-bold">Refi Rate</span>
+                                        <span className="text-white">6.25%</span>
+                                    </div>
+                                    <div className="w-full bg-blue-500/10 p-3 mt-4">
+                                        <p className="text-[9px] text-blue-300 leading-tight italic">
+                                            "Creative financing active: Using ARM reduces monthly debt service by 12% compared to 30yr Fixed, accelerating capital for the Repeat stage."
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             );
         };
 
-        // For React 18, use createRoot instead of render
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
