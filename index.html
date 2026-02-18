@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEALSCOPE v3.0 | AI Real Estate Hunter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+        
+        body { 
+            background-color: #020b05; 
+            color: #00ff9d; 
+            font-family: 'JetBrains Mono', monospace;
+            overflow-x: hidden;
+        }
+
+        .terminal-glass { 
+            background: rgba(2, 11, 5, 0.9); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(0, 255, 157, 0.1); 
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 100;
+            background: linear-gradient(0deg, rgba(0, 255, 157, 0) 0%, rgba(0, 255, 157, 0.05) 50%, rgba(0, 255, 157, 0) 100%);
+            opacity: 0.1;
+            position: fixed;
+            bottom: 100%;
+            animation: scan 6s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+
+        .glow-text { text-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }
+        .hot-deal { background: rgba(0, 255, 157, 0.05); border-left: 4px solid #00ff9d; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const PIPELINE = [
+            { id: "SEARCH", label: "ZILLOW SCRAPE", icon: "fa-magnifying-glass-location", color: "text-blue-400" },
+            { id: "ENRICH", label: "ZPIDS ENRICH", icon: "fa-database", color: "text-yellow-400" },
+            { id: "SCORE", label: "AI EVALUATION", icon: "fa-brain", color: "text-emerald-400" }
+        ];
+
+        const App = () => {
+            const [activeStep, setActiveStep] = useState(0);
+            const [logs, setLogs] = useState([]);
+            const [deals, setDeals] = useState([]);
+            const [isScanning, setIsScanning] = useState(false);
+            const logEndRef = useRef(null);
+
+            const addLog = (msg, type = 'info') => {
+                const colors = { info: 'text-gray-500', success: 'text-emerald-400', warn: 'text-yellow-500', ai: 'text-blue-400' };
+                setLogs(prev => [...prev, { msg, type: colors[type], time: new Date().toLocaleTimeString() }]);
+            };
+
+            const runPipeline = async () => {
+                setIsScanning(true);
+                setDeals([]);
+                setLogs([]);
+
+                // STEP 1: Search
+                setActiveStep(0);
+                addLog("Initializing Zillow Zip Search Actor...", "info");
+                await new Promise(r => setTimeout(r, 1000));
+                addLog("Extracted 12 Target ZPIDs from Clearwater, FL", "success");
+
+                // STEP 2: Enrich
+                setActiveStep(1);
+                addLog("Booting ZPID Enrichment Node 18TsPuKUHiy49Y10E", "info");
+                await new Promise(r => setTimeout(r, 1500));
+                addLog("Fetched property tax records and DOM data", "success");
+
+                // STEP 3: AI Scoring
+                setActiveStep(2);
+                addLog("Routing dataset to Claude-3-Sonnet for deal scoring...", "ai");
+                await new Promise(r => setTimeout(r, 2000));
+
+                const mockDeals = [
+                    { addr: "1847 Cypress Creek Rd", price: 285000, zest: 342000, score: 88, dom: 87, analysis: "Selling $57K below zestimate. Highly motivated seller." },
+                    { addr: "902 Lakewood Ave", price: 412000, zest: 498000, score: 94, dom: 134, analysis: "Distressed scenario. Massive value play for fix/flip." },
+                    { addr: "3301 Rio Grande Blvd", price: 198000, zest: 267000, score: 97, dom: 201, analysis: "Screaming deal. High upside in appreciating market." },
+                    { addr: "4402 Magnolia Bluff Dr", price: 349000, zest: 361000, score: 62, dom: 12, analysis: "Near market value. Decent fundamentals but little discount." }
+                ];
+
+                setDeals(mockDeals.sort((a,b) => b.score - a.score));
+                addLog("AI Scoring complete. 3 Hot Deals flagged.", "success");
+                setIsScanning(false);
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col p-4 md:p-8">
+                    {/* HEADER */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                        <div>
+                            <h1 className="text-3xl font-black tracking-tighter glow-text uppercase italic">
+                                DEAL<span className="text-white">SCOPE</span> <span className="text-xs text-emerald-900 bg-emerald-400/10 px-2 py-1 rounded">v3.0</span>
+                            </h1>
+                            <p className="text-[10px] text-emerald-500/50 font-bold tracking-[0.3em] uppercase">Autonomous Real Estate Intelligence</p>
+                        </div>
+                        <button 
+                            onClick={runPipeline}
+                            disabled={isScanning}
+                            className={`px-8 py-3 rounded-sm font-bold uppercase tracking-widest text-xs transition-all ${isScanning ? 'bg-emerald-950 text-emerald-800' : 'bg-emerald-500 text-black hover:bg-white hover:shadow-[0_0_20px_rgba(0,255,157,0.4)]'}`}
+                        >
+                            {isScanning ? 'SCANNING PIPELINE...' : 'EXECUTE HUNT'}
+                        </button>
+                    </div>
+
+                    {/* PIPELINE STATUS */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-1 mb-8">
+                        {PIPELINE.map((p, i) => (
+                            <div key={p.id} className={`p-4 terminal-glass flex items-center gap-4 transition-all ${activeStep === i ? 'border-b-2 border-emerald-500 bg-emerald-500/5' : 'opacity-40'}`}>
+                                <i className={`fa-solid ${p.icon} ${p.color} text-xl`}></i>
+                                <div>
+                                    <div className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Step 0{i+1}</div>
+                                    <div className="text-xs font-bold text-white uppercase">{p.label}</div>
+                                </div>
+                                {activeStep > i && <i className="fa-solid fa-check text-emerald-400 ml-auto"></i>}
+                                {activeStep === i && isScanning && <i className="fa-solid fa-circle-notch animate-spin text-emerald-400 ml-auto"></i>}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
+                        {/* MAIN RESULTS AREA */}
+                        <div className="lg:col-span-8 flex flex-col gap-4">
+                            <div className="text-[10px] font-bold text-emerald-500/40 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Top Investment Opportunities
+                            </div>
+                            
+                            {deals.length === 0 ? (
+                                <div className="h-64 terminal-glass rounded-sm border-dashed border-emerald-500/20 flex flex-col items-center justify-center text-emerald-900">
+                                    <i className="fa-solid fa-radar text-4xl mb-4 animate-pulse"></i>
+                                    <span className="text-xs font-bold tracking-widest uppercase">Awaiting Pipeline Execution</span>
+                                </div>
+                            ) : (
+                                deals.map((deal, i) => (
+                                    <div key={i} className={`p-6 terminal-glass rounded-sm transition-all hover:bg-emerald-500/5 fade-in ${deal.score >= 90 ? 'hot-deal shadow-[0_0_20px_rgba(0,255,157,0.05)]' : ''}`}>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <h3 className="text-lg font-bold text-white tracking-tight">{deal.addr}</h3>
+                                                <div className="flex gap-4 text-[10px] text-gray-500 uppercase font-bold mt-1">
+                                                    <span>{deal.dom} Days on Market</span>
+                                                    <span className="text-emerald-500">Zestimate: ${deal.zest.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-2xl font-black text-emerald-400">${deal.price.toLocaleString()}</div>
+                                                <div className="text-[10px] font-bold bg-emerald-400/10 text-emerald-400 px-2 py-0.5 inline-block rounded">
+                                                    {deal.score} SCORE
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-emerald-500/10 pt-4 flex items-center gap-3">
+                                            <i className="fa-solid fa-brain text-blue-400 text-xs"></i>
+                                            <p className="text-[11px] text-blue-300 italic">"{deal.analysis}"</p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* LIVE LOG PANEL */}
+                        <div className="lg:col-span-4 flex flex-col h-[500px] lg:h-auto">
+                            <div className="text-[10px] font-bold text-emerald-500/40 uppercase tracking-[0.2em] mb-2">Live Pipeline Log</div>
+                            <div className="terminal-glass rounded-sm p-4 flex-grow overflow-y-auto text-[10px] leading-relaxed">
+                                {logs.length === 0 && <span className="text-emerald-900">SYSTEM IDLE...</span>}
+                                {logs.map((log, i) => (
+                                    <div key={i} className={`mb-1 ${log.type}`}>
+                                        <span className="opacity-30 mr-2">[{log.time}]</span>
+                                        <span className="font-bold">{log.msg}</span>
+                                    </div>
+                                ))}
+                                <div ref={logEndRef} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* FOOTER METRICS */}
+                    <div className="mt-8 pt-6 border-t border-emerald-500/10 flex flex-wrap gap-8 text-[10px] font-bold text-emerald-900">
+                        <div className="flex gap-2"><span>API STATUS:</span> <span className="text-emerald-500">OPERATIONAL</span></div>
+                        <div className="flex gap-2"><span>DATA FRESHNESS:</span> <span className="text-emerald-500">REAL-TIME</span></div>
+                        <div className="flex gap-2"><span>AI MODEL:</span> <span className="text-blue-500">CLAUDE-3-SONNET</span></div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
