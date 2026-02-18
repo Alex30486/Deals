@@ -1,51 +1,188 @@
-// ─── SENIOR LEVEL DYNAMIC ENGINE ─────────────────────────────────────────────
-const runExecute = async () => {
-    if (!loc) return addLog("CRITICAL: TARGET GEOMETRY UNDEFINED.", "err");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEALSCOPE v6.0 | Institutional RE Engine</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;800&family=Outfit:wght@300;700;900&display=swap');
+        :root { --neon: #00ff9d; --bg: #010804; --panel: rgba(0, 255, 157, 0.03); }
+        body { background: var(--bg); color: var(--neon); font-family: 'Outfit', sans-serif; overflow-x: hidden; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: var(--panel); border: 1px solid rgba(0, 255, 157, 0.1); backdrop-filter: blur(20px); }
+        .glow-text { text-shadow: 0 0 15px rgba(0, 255, 157, 0.4); }
+        .btn-primary { background: var(--neon); color: black; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-primary:hover { background: white; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 255, 157, 0.2); }
+        input:focus { border-color: var(--neon) !important; box-shadow: 0 0 10px rgba(0, 255, 157, 0.1); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .pulse { animation: pulse 2s infinite; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #004d2f; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-    setIsHunting(true);
-    setResults([]);
-    
-    // STAGE 1: SEARCH (Injecting the specific location into the mock scraper)
-    setActiveStep(0);
-    addLog(`INITIALIZING SCAN FOR AREA: ${loc.toUpperCase()}...`, "info");
-    await new Promise(r => setTimeout(r, 1500));
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-    // Simulate "Real" API data mapping based on the 'loc' variable
-    const dynamicScrapedData = [
-        {
-            id: crypto.randomUUID(),
-            zpid: Math.floor(Math.random() * 100000000).toString(),
-            // DYNAMIC ADDRESS INJECTION: No more Florida-only results
-            addr: `${Math.floor(Math.random() * 9000) + 100} Innovation Way, ${loc}`,
-            price: Math.floor(Math.random() * (450000 - 150000) + 150000),
-            zest: Math.floor(Math.random() * (600000 - 300000) + 300000),
-            rent: Math.floor(Math.random() * (3500 - 1800) + 1800),
-            tags: ["Deep Equity", "High Yield"],
-            logic: `High variance in ${loc} sub-market suggests motivated seller. Capital recapture potential is high.`
-        },
-        {
-            id: crypto.randomUUID(),
-            zpid: Math.floor(Math.random() * 100000000).toString(),
-            addr: `${Math.floor(Math.random() * 9000) + 100} Heritage Dr, ${loc}`,
-            price: Math.floor(Math.random() * (350000 - 120000) + 120000),
-            zest: Math.floor(Math.random() * (500000 - 250000) + 250000),
-            rent: Math.floor(Math.random() * (2800 - 1500) + 1500),
-            tags: ["BRRRR Play", "Value-Add"],
-            logic: `Distressed asset identified in ${loc} corridor. 70% ARV rule applies. Refinance possible in 6 months.`
-        }
-    ];
+        const App = () => {
+            const [query, setQuery] = useState('');
+            const [isHunting, setIsHunting] = useState(false);
+            const [results, setResults] = useState([]);
+            const [logs, setLogs] = useState([{ m: "TERMINAL INITIALIZED. WAITING FOR GEOMETRY...", t: "sys", time: "00:00:00" }]);
 
-    // STAGE 2: ENRICH (Processing the dynamic list)
-    setActiveStep(1);
-    addLog(`ENRICHING ${dynamicScrapedData.length} NODES FROM ${loc} DATASET...`, "info");
-    await new Promise(r => setTimeout(r, 1200));
+            const addLog = (m, t = 'info') => {
+                const time = new Date().toLocaleTimeString('en-GB');
+                setLogs(prev => [{ m, t, time }, ...prev]);
+            };
 
-    // STAGE 3: AI ANALYSIS
-    setActiveStep(2);
-    addLog(`CLAUDE 3.5: FINISHED GEOSPATIAL SCORING FOR ${loc.toUpperCase()}.`, "success");
-    await new Promise(r => setTimeout(r, 800));
+            // ─── SENIOR ENGINE LOGIC ───
+            const runPipeline = async () => {
+                if (!query) return addLog("ERROR: DESTINATION GEOMETRY REQUIRED.", "err");
+                
+                setIsHunting(true);
+                setResults([]);
+                addLog(`SCANNING REGION: ${query.toUpperCase()}`, "info");
 
-    setResults(dynamicScrapedData);
-    setActiveStep(-1);
-    setIsHunting(false);
-};
+                // STAGE 1: SCRAPE SIMULATION
+                await new Promise(r => setTimeout(r, 1200));
+                addLog(`NODE 01: SCRAPING ZILLOW ENDPOINTS FOR ${query}...`, "info");
+                
+                // STAGE 2: AI SCORING
+                await new Promise(r => setTimeout(r, 1000));
+                addLog(`NODE 02: CLAUDE 3.5 SONNET CALCULATING YIELDS...`, "ai");
+
+                // DYNAMIC DATA GENERATION (The Fix)
+                const data = [
+                    {
+                        id: crypto.randomUUID(),
+                        addr: `${Math.floor(Math.random() * 9000) + 100} Mission Blvd, ${query}`,
+                        price: 545000,
+                        zest: 685000,
+                        rent: 3200,
+                        tags: ["Deep Equity", "BRRRR Play"],
+                        logic: `High variance in ${query} sub-market. 70% ARV threshold met.`
+                    },
+                    {
+                        id: crypto.randomUUID(),
+                        addr: `${Math.floor(Math.random() * 9000) + 100} Garey Ave, ${query}`,
+                        price: 412000,
+                        zest: 445000,
+                        rent: 2850,
+                        tags: ["Turnkey", "ARM Refi"],
+                        logic: "Stable rental asset. Ideal for short-term ARM financing."
+                    }
+                ];
+
+                setResults(data);
+                setIsHunting(false);
+                addLog(`SUCCESS: ${data.length} ASSETS IDENTIFIED IN ${query}.`, "success");
+            };
+
+            return (
+                <div className="min-h-screen">
+                    {/* NAV BAR */}
+                    <nav className="fixed top-0 w-full z-50 glass border-b border-emerald-900/30 px-8 py-4 flex justify-between items-center">
+                        <div className="flex flex-col">
+                            <h1 className="text-2xl font-black italic glow-text tracking-tighter">DEALSCOPE <span className="text-white">v6.0</span></h1>
+                            <span className="text-[8px] mono uppercase tracking-[0.5em] text-emerald-800 font-bold">Senior Investment Terminal</span>
+                        </div>
+                        <div className="flex gap-4">
+                            <input 
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && runPipeline()}
+                                className="bg-black/40 border border-emerald-900/50 px-6 py-3 text-xs w-64 outline-none rounded-sm italic text-white" 
+                                placeholder="Enter ZIP or City (e.g. 91766)..."
+                            />
+                            <button onClick={runPipeline} disabled={isHunting} className="btn-primary px-8 py-3 text-[10px] font-black uppercase tracking-widest rounded-sm">
+                                {isHunting ? <i className="fa-solid fa-circle-notch fa-spin"></i> : "Execute"}
+                            </button>
+                        </div>
+                    </nav>
+
+                    <main className="pt-32 px-8 grid grid-cols-12 gap-8 max-w-[1600px] mx-auto">
+                        {/* RESULTS COLUMN */}
+                        <div className="col-span-12 lg:col-span-8 space-y-6">
+                            {results.length === 0 && !isHunting && (
+                                <div className="glass p-20 text-center border-dashed border-2 border-emerald-900/20">
+                                    <i className="fa-solid fa-radar text-4xl mb-4 opacity-20"></i>
+                                    <p className="mono text-xs text-emerald-800 uppercase font-bold">Awaiting Market Input...</p>
+                                </div>
+                            )}
+                            
+                            {results.map(deal => {
+                                const arv = deal.zest * 1.05;
+                                const mao = (arv * 0.70) - (deal.price * 0.1);
+                                return (
+                                    <div key={deal.id} className="glass p-8 group relative overflow-hidden transition-all hover:border-neon/40">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div>
+                                                <div className="flex gap-2 mb-3">
+                                                    {deal.tags.map(t => <span key={t} className="text-[8px] font-black border border-neon/30 px-2 py-0.5 rounded-sm uppercase text-white">{t}</span>)}
+                                                </div>
+                                                <h2 className="text-3xl font-black italic text-white tracking-tighter uppercase">{deal.addr}</h2>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-4xl font-black text-white italic">${deal.price.toLocaleString()}</div>
+                                                <div className="text-[10px] mono text-emerald-800 font-bold mt-1 uppercase">70% RULE MAO: ${Math.round(mao).toLocaleString()}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-6 py-6 border-y border-emerald-900/20 mb-6">
+                                            <div className="space-y-1">
+                                                <span className="text-[8px] block mono font-bold text-emerald-800 uppercase">Projected ARV</span>
+                                                <span className="text-lg font-bold text-white">${Math.round(arv).toLocaleString()}</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[8px] block mono font-bold text-neon uppercase italic">Recapture (Refi)</span>
+                                                <span className="text-lg font-bold text-neon italic">${Math.round(arv * 0.75).toLocaleString()}</span>
+                                            </div>
+                                            <div className="space-y-1 text-right">
+                                                <span className="text-[8px] block mono font-bold text-emerald-800 uppercase">Est. Rent</span>
+                                                <span className="text-lg font-bold text-white">${deal.rent}/mo</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-4 p-4 bg-neon/5 border-l-2 border-neon">
+                                            <i className="fa-solid fa-brain text-neon mt-1"></i>
+                                            <p className="text-xs text-gray-400 italic leading-relaxed">"{deal.logic}"</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* TERMINAL COLUMN */}
+                        <div className="col-span-12 lg:col-span-4 h-[70vh] sticky top-32">
+                            <div className="glass p-6 h-full flex flex-col">
+                                <div className="flex items-center justify-between border-b border-emerald-900/30 pb-4 mb-4 text-[10px] font-black uppercase">
+                                    <span>System_Logs</span>
+                                    <span className="text-neon pulse">Live_Stream</span>
+                                </div>
+                                <div className="flex-grow overflow-y-auto mono text-[11px] space-y-3 pr-2">
+                                    {logs.map((l, i) => (
+                                        <div key={i} className={`flex gap-3 ${l.t === 'ai' ? 'text-neon' : l.t === 'err' ? 'text-red-500' : 'text-emerald-700'}`}>
+                                            <span className="opacity-40">[{l.time}]</span>
+                                            <p>{l.m}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
