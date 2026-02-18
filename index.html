@@ -9,21 +9,13 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .glow-text { text-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }
-        .terminal-glass { background: rgba(0, 10, 5, 0.8); backdrop-filter: blur(4px); }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #1a5c3a; border-radius: 2px; }
-    </style>
 </head>
-<body class="bg-[#020b05] text-[#00ff9d] font-mono selection:bg-emerald-500 selection:text-black">
+<body class="bg-[#020b05] text-[#00ff9d] font-mono">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // ─── PIPELINE CONFIGURATION ──────────────────────────────────────────
         const PIPELINE = [
             { id: "maxcopell~zillow-zip-search", label: "SEARCH", icon: "fa-location-crosshairs", color: "text-blue-400" },
             { id: "18TsPuKUHiy49Y10E", label: "ENRICH", icon: "fa-database", color: "text-yellow-400" },
@@ -33,158 +25,54 @@
         const App = () => {
             const [location, setLocation] = useState('');
             const [isHunting, setIsHunting] = useState(false);
-            const [activeStep, setActiveStep] = useState(-1);
-            const [logs, setLogs] = useState([]);
             const [results, setResults] = useState([]);
-            const [agentMsgs, setAgentMsgs] = useState([
-                { role: 'ai', text: "Systems online. Property Manager ELARA standing by for market analysis." }
-            ]);
-
-            const addLog = (text, type = 'info') => {
-                const colors = { info: 'text-gray-500', success: 'text-emerald-400', ai: 'text-blue-400' };
-                setLogs(prev => [{ text, color: colors[type], time: new Date().toLocaleTimeString(), id: Date.now() }, ...prev]);
-            };
+            const [agentMsgs, setAgentMsgs] = useState([{ role: 'ai', text: "Agent ELARA online. Standby for market directives." }]);
 
             const runHunt = async () => {
                 if(!location) return;
                 setIsHunting(true);
-                setResults([]);
-                setLogs([]);
-
-                try {
-                    // Stage 1: Search
-                    setActiveStep(0);
-                    addLog(`Accessing node ${PIPELINE[0].id}...`, 'info');
-                    await new Promise(r => setTimeout(r, 1500));
-                    addLog(`Success: Cached 24 ZPIDs for ${location}`, 'success');
-
-                    // Stage 2: Enrich
-                    setActiveStep(1);
-                    addLog(`Streaming to enrichment node: ${PIPELINE[1].id}`, 'info');
-                    await new Promise(r => setTimeout(r, 2000));
-                    addLog(`Tax Records & DOM metrics integrated.`, 'success');
-
-                    // Stage 3: AI Scoring
-                    setActiveStep(2);
-                    addLog(`Claude AI: Generating investment thesis...`, 'ai');
-                    await new Promise(r => setTimeout(r, 2000));
-
-                    const deals = [
-                        { addr: `1024 ${location} Blvd`, price: 315000, zest: 395000, score: 94, thesis: "120+ DOM suggests extreme seller fatigue. Ideal for low-ball offer." },
-                        { addr: `88 Oak St, ${location}`, price: 198000, zest: 260000, score: 89, thesis: "Pre-foreclosure alert. Equity gap supports substantial renovation." }
-                    ];
-
-                    setResults(deals);
-                    addLog(`Pipeline complete. High-confidence identified.`, 'success');
-                    
-                    // Trigger Agent Analysis
-                    setAgentMsgs(prev => [...prev, { role: 'ai', text: `Found ${deals.length} opportunities. The property at ${deals[0].addr} looks like our best management play due to the equity buffer.` }]);
-                } finally {
-                    setIsHunting(false);
-                    setActiveStep(-1);
-                }
+                // Simulate pipeline stages from deal-finder.jsx
+                await new Promise(r => setTimeout(r, 1500)); 
+                
+                const deals = [
+                    { addr: `742 Evergreen Terr, ${location}`, price: 420000, zest: 510000, score: 92, thesis: "Deep equity discount; potential fix-and-flip candidate." }
+                ];
+                setResults(deals);
+                setAgentMsgs(prev => [...prev, { role: 'ai', text: `Analysis complete. Found a high-yield asset at ${deals[0].addr}. Recommendation: Immediate follow-up.` }]);
+                setIsHunting(false);
             };
 
             return (
-                <div className="min-h-screen p-6 max-w-7xl mx-auto">
-                    {/* Header */}
-                    <header className="flex justify-between items-end mb-12 border-b border-emerald-900 pb-8">
-                        <div>
-                            <h1 className="text-4xl font-black italic tracking-tighter glow-text">DEALSCOPE <span className="text-white">v3.0</span></h1>
-                            <div className="flex gap-4 mt-2 text-[10px] text-emerald-800 font-bold uppercase tracking-widest">
-                                <span>Agent: ELARA</span>
-                                <span>Status: Operational</span>
-                            </div>
-                        </div>
+                <div className="p-8 max-w-6xl mx-auto">
+                    <div className="flex justify-between border-b border-emerald-900 pb-8 mb-8">
+                        <h1 className="text-3xl font-black italic glow-text">DEALSCOPE <span className="text-white">v3.0</span></h1>
                         <div className="flex gap-2">
-                            <input 
-                                className="bg-black border border-emerald-500/30 px-4 py-3 text-xs focus:border-emerald-500 outline-none w-64"
-                                placeholder="ENTER TARGET ZIP/CITY..."
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                            />
-                            <button 
-                                onClick={runHunt}
-                                className="bg-emerald-500 text-black px-8 py-3 text-xs font-black hover:bg-white transition-all disabled:opacity-50"
-                                disabled={isHunting}
-                            >
-                                {isHunting ? 'RUNNING PIPELINE...' : 'EXECUTE HUNT'}
+                            <input className="bg-black border border-emerald-500/30 px-4 py-2 text-xs" placeholder="ZIP..." onChange={(e)=>setLocation(e.target.value)} />
+                            <button onClick={runHunt} className="bg-emerald-500 text-black px-6 py-2 text-xs font-bold" disabled={isHunting}>
+                                {isHunting ? 'ACTIVE...' : 'EXECUTE'}
                             </button>
                         </div>
-                    </header>
+                    </div>
 
                     <div className="grid grid-cols-12 gap-8">
-                        {/* Main Feed */}
-                        <div className="col-span-12 lg:col-span-8 space-y-6">
-                            {/* Pipeline Visualizer */}
-                            <div className="grid grid-cols-3 gap-2">
-                                {PIPELINE.map((p, i) => (
-                                    <div key={p.id} className={`p-4 border border-emerald-500/10 ${activeStep === i ? 'bg-emerald-500/10 border-emerald-500' : 'opacity-40'}`}>
-                                        <div className="text-[9px] mb-1 uppercase font-bold text-gray-500">Node 0{i+1}</div>
-                                        <div className="text-xs font-black flex items-center gap-2">
-                                            <i className={`fa-solid ${p.icon} ${p.color}`}></i> {p.label}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Property Cards */}
-                            {results.map((deal, i) => (
-                                <div key={i} className="border border-emerald-500/20 p-6 bg-black/40 hover:border-emerald-500/60 transition-all group">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors uppercase italic">{deal.addr}</h3>
-                                            <div className="mt-4 p-3 bg-emerald-500/5 border-l-2 border-emerald-500">
-                                                <div className="text-[9px] text-blue-400 font-bold mb-1 uppercase tracking-widest flex items-center gap-2">
-                                                    <i className="fa-solid fa-brain"></i> AI Investment Thesis
-                                                </div>
-                                                <p className="text-sm text-gray-400 italic">"{deal.thesis}"</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-3xl font-black">${deal.price.toLocaleString()}</div>
-                                            <div className="text-[10px] text-emerald-900 font-bold">CONFIDENCE: {deal.score}%</div>
-                                        </div>
-                                    </div>
+                        <div className="col-span-8 space-y-4">
+                            {results.map((d, i) => (
+                                <div key={i} className="border border-emerald-500/20 p-6 bg-black/40">
+                                    <h3 className="text-xl font-bold uppercase">{d.addr}</h3>
+                                    <p className="text-sm text-gray-500 italic mt-2">"{d.thesis}"</p>
                                 </div>
                             ))}
                         </div>
-
-                        {/* Agent & Log Sidebar */}
-                        <div className="col-span-12 lg:col-span-4 space-y-6">
-                            {/* Elara Property Manager */}
-                            <div className="border border-emerald-500/20 p-6 terminal-glass min-h-[300px] flex flex-col">
-                                <div className="flex items-center gap-3 mb-6 border-b border-emerald-900 pb-4">
-                                    <div className="w-10 h-10 border border-emerald-500 flex items-center justify-center text-xl glow-text">◈</div>
-                                    <div>
-                                        <div className="text-xs font-black uppercase">ELARA</div>
-                                        <div className="text-[9px] text-emerald-800 font-bold">Property Manager Agent</div>
-                                    </div>
-                                </div>
-                                <div className="flex-grow space-y-4 text-[11px]">
-                                    {agentMsgs.map((m, i) => (
-                                        <div key={i} className="text-emerald-300 leading-relaxed">
-                                            <span className="opacity-30 mr-2">›</span>{m.text}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Live System Logs */}
-                            <div className="border border-emerald-500/10 p-4 text-[10px] h-64 overflow-y-auto bg-black/20">
-                                <div className="text-emerald-900 font-bold mb-3 uppercase tracking-widest">Pipeline Stream</div>
-                                {logs.map(log => (
-                                    <div key={log.id} className={`${log.color} mb-1`}>
-                                        <span className="opacity-20 mr-2">[{log.time}]</span> {log.text}
-                                    </div>
-                                ))}
-                            </div>
+                        <div className="col-span-4 border border-emerald-500/20 p-6 h-96 overflow-y-auto">
+                            <div className="text-[10px] font-bold text-emerald-900 uppercase mb-4">Property Manager Elara</div>
+                            {agentMsgs.map((m, i) => <div key={i} className="text-xs text-emerald-300 mb-2">› {m.text}</div>)}
                         </div>
                     </div>
                 </div>
             );
         };
 
+        // For React 18, use createRoot instead of render
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
