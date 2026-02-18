@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEALSCOPE v7.8 | Defensive Institutional Build</title>
+    <title>DEALSCOPE PRO | Elite Asset Acquisition</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;700;900&display=swap');
-        :root { --neon: #00ff9d; --bg: #010804; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Outfit', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;900&display=swap');
+        :root { --neon: #00ff9d; --bg: #020a06; --premium-gold: #f59e0b; }
+        body { background: var(--bg); color: #fff; font-family: 'Outfit', sans-serif; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: rgba(0, 255, 157, 0.03); border: 1px solid rgba(0, 255, 157, 0.1); backdrop-filter: blur(10px); }
-        .glow-neon { text-shadow: 0 0 10px rgba(0, 255, 157, 0.4); }
-        .equity-meter { stroke-dasharray: 251.2; transition: stroke-dashoffset 2s ease-out; }
+        .glass-nav { background: rgba(2, 10, 6, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(0, 255, 157, 0.1); }
+        .hero-gradient { background: radial-gradient(circle at 50% 50%, rgba(0, 255, 157, 0.05) 0%, transparent 70%); }
+        .premium-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .premium-card:hover { border-color: var(--neon); transform: translateY(-5px); background: rgba(0, 255, 157, 0.02); }
+        .listing-btn { background: linear-gradient(90deg, var(--neon), #00d1ff); color: #000; font-weight: 900; }
+        @keyframes pulse-slow { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.1; } }
+        .bg-grid { background-image: linear-gradient(rgba(0, 255, 157, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 157, 0.05) 1px, transparent 1px); background-size: 50px 50px; }
     </style>
 </head>
 <body>
@@ -30,101 +34,135 @@
             const [results, setResults] = useState([]);
             const [isHunting, setIsHunting] = useState(false);
 
-            const runExecute = async () => {
+            const runHunt = async () => {
                 if (!loc) return;
                 setIsHunting(true);
                 setResults([]);
-                
-                // Simulate fetching data
-                await new Promise(r => setTimeout(r, 1500));
+                await new Promise(r => setTimeout(r, 2000));
 
-                const mockData = Array.from({ length: 12 }).map((_, i) => ({
+                const data = Array.from({ length: 9 }).map((_, i) => ({
                     id: crypto.randomUUID(),
-                    zpid: (2147483647 - i).toString(),
-                    addr: `${100 + i * 15} High Growth Way, ${loc}`,
-                    price: 300000 + (Math.random() * 200000),
-                    zest: 450000 + (Math.random() * 200000),
-                    rehab: 40000,
-                    rent: 2800
+                    zpid: (11000000 + i * 142).toString(),
+                    addr: `${Math.floor(Math.random() * 9000)} Prime St, ${loc}`,
+                    price: 350000 + (Math.random() * 500000),
+                    zest: 500000 + (Math.random() * 600000),
+                    equity: 15 + Math.floor(Math.random() * 30),
+                    rent: 3200
                 }));
-
-                setResults(mockData);
+                setResults(data);
                 setIsHunting(false);
             };
 
             return (
-                <div className="min-h-screen pt-28 px-10">
-                    <nav className="fixed top-0 left-0 w-full glass border-b border-emerald-900/40 p-6 flex justify-between items-center z-50">
-                        <h1 className="text-2xl font-black italic glow-neon tracking-tighter">DEALSCOPE <span className="text-white">v7.8</span></h1>
-                        <div className="flex gap-4">
-                            <input value={loc} onChange={(e) => setLoc(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && runExecute()} className="bg-black/60 border border-emerald-900/50 px-6 py-3 text-xs w-80 rounded outline-none text-white" placeholder="Enter ZIP (e.g. 91766)..." />
-                            <button onClick={runExecute} disabled={isHunting} className="bg-neon text-black px-10 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-white disabled:opacity-50">
-                                {isHunting ? 'SCANNING...' : 'EXECUTE HUNT'}
+                <div className="min-h-screen relative bg-grid">
+                    {/* PREMIUM NAV BAR */}
+                    <nav className="fixed top-0 w-full z-[100] glass-nav px-8 py-5 flex justify-between items-center">
+                        <div className="flex items-center gap-8">
+                            <div className="flex flex-col">
+                                <h1 className="text-2xl font-black tracking-tighter italic text-white leading-none">DEALSCOPE <span className="text-[var(--neon)]">PRO</span></h1>
+                                <span className="text-[8px] mono uppercase tracking-[0.4em] text-emerald-800">Advanced Equity Terminal</span>
+                            </div>
+                            <div className="hidden md:flex gap-6 text-[10px] mono font-bold text-gray-500 uppercase">
+                                <span className="text-white">Market Scanner</span>
+                                <span className="hover:text-[var(--neon)] cursor-pointer transition-colors">BRRRR Engine</span>
+                                <span className="hover:text-[var(--neon)] cursor-pointer transition-colors">Portfolio HUD</span>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                <input 
+                                    value={loc} 
+                                    onChange={(e) => setLoc(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && runHunt()}
+                                    placeholder="Target Market (e.g. 91766)..."
+                                    className="bg-black/50 border border-emerald-900/30 rounded-full px-6 py-2 text-xs w-72 focus:border-[var(--neon)] outline-none transition-all"
+                                />
+                                <i className="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-emerald-900 text-xs"></i>
+                            </div>
+                            <button onClick={runHunt} className="listing-btn px-6 py-2 rounded-full text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+                                {isHunting ? <i className="fa-solid fa-circle-notch fa-spin"></i> : 'Execute Scan'}
                             </button>
                         </div>
                     </nav>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1600px] mx-auto pb-20">
-                        {/* ─── LAYER 1: DEFENSIVE LIST RENDERING ─── */}
-                        {results && results.length > 0 ? (
-                            results.map(deal => {
-                                // LAYER 2: DEFENSIVE MATH (Ensures variables aren't undefined)
-                                const price = deal?.price ?? 0;
-                                const zest = deal?.zest ?? 0;
-                                const rehab = deal?.rehab ?? 0;
-                                const arv = zest * 1.05;
-                                const totalBasis = price + rehab;
-                                const equityDelta = arv - totalBasis;
-                                const equityPercent = price > 0 ? Math.min(100, (equityDelta / price) * 100) : 0;
-                                const refiMax = arv * 0.75;
-                                const capitalLeft = totalBasis - refiMax;
-
-                                return (
-                                    <div key={deal.id} className="glass rounded-xl p-6 border border-emerald-900/20">
-                                        <div className="flex justify-between items-start mb-6">
-                                            <div className="w-2/3">
-                                                <h2 className="text-xl font-black text-white italic truncate uppercase">{deal?.addr || "Unknown Location"}</h2>
-                                                <a href={`https://www.zillow.com/homedetails/${deal?.zpid || ""}_zpid/`} target="_blank" className="text-[9px] text-blue-400 font-bold flex items-center gap-1 mt-1 hover:underline">
-                                                    <i className="fa-solid fa-up-right-from-square"></i> VIEW LISTING
-                                                </a>
-                                            </div>
-                                            
-                                            {/* EQUITY GLOW METER */}
-                                            <div className="relative w-14 h-14 flex items-center justify-center">
-                                                <svg className="w-full h-full transform -rotate-90">
-                                                    <circle cx="28" cy="28" r="24" stroke="rgba(0, 255, 157, 0.1)" strokeWidth="3" fill="transparent" />
-                                                    <circle cx="28" cy="28" r="24" stroke="#00ff9d" strokeWidth="3" fill="transparent" strokeDasharray="150.7" strokeDashoffset={150.7 - (150.7 * (equityPercent / 100))} strokeLinecap="round" className="equity-meter" />
-                                                </svg>
-                                                <span className="absolute text-[8px] font-black text-white">{Math.round(equityPercent)}%</span>
-                                            </div>
-                                        </div>
-
-                                        {/* BRRRR BREAKDOWN PANEL */}
-                                        <div className="bg-black/40 rounded p-4 border border-emerald-900/30">
-                                            <p className="text-[7px] mono font-bold text-emerald-800 uppercase mb-3">BRRRR Calculation Breakdown</p>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <p className="text-[7px] text-gray-500 uppercase">Purchase</p>
-                                                    <p className="text-sm font-bold text-white">${price.toLocaleString()}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-[7px] text-gray-500 uppercase italic">Capital Left In</p>
-                                                    <p className={`text-sm font-bold italic ${capitalLeft <= 0 ? 'text-neon' : 'text-red-400'}`}>
-                                                        {capitalLeft <= 0 ? 'INFINITE' : `$${Math.round(capitalLeft).toLocaleString()}`}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        ) : (
-                            /* LAYER 3: FALLBACK UI (Prevents Blank Screen) */
-                            <div className="col-span-full py-20 text-center opacity-30 italic mono text-sm">
-                                {isHunting ? "SYST_SCAN: Analyzing geospatial data blocks..." : "TERMINAL_IDLE: Standing by for search injection."}
+                    {/* HERO SECTION */}
+                    {results.length === 0 && (
+                        <section className="h-screen flex flex-col items-center justify-center text-center px-4 hero-gradient">
+                            <div className="inline-block px-4 py-1 border border-emerald-500/20 rounded-full bg-emerald-500/5 text-[var(--neon)] text-[10px] font-black uppercase tracking-widest mb-6">
+                                v8.0 Enterprise Release
                             </div>
-                        )}
+                            <h2 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 leading-[0.9]">
+                                FIND THE GAP.<br /><span className="text-gray-600">ACQUIRE EQUITY.</span>
+                            </h2>
+                            <p className="max-w-xl text-gray-500 text-lg font-light leading-relaxed mb-10">
+                                Institutional grade real estate analysis using the <span className="text-white font-bold italic">BRRRR Algorithm</span>. Search any ZIP to identify distressed assets with maximum capital recapture potential.
+                            </p>
+                        </section>
+                    )}
+
+                    {/* RESULTS GRID */}
+                    <div className={`px-10 pb-20 pt-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1500px] mx-auto transition-opacity duration-1000 ${results.length > 0 ? 'opacity-100' : 'opacity-0'}`}>
+                        {results.map(deal => (
+                            <div key={deal.id} className="premium-card rounded-2xl p-8 relative flex flex-col h-full">
+                                {/* CARD HEADER */}
+                                <div className="flex justify-between items-start mb-8">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black text-[var(--neon)] uppercase tracking-widest mb-1">Target Asset</span>
+                                        <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">{deal?.addr ?? "N/A"}</h3>
+                                    </div>
+                                    <div className="bg-[var(--neon)]/10 text-[var(--neon)] px-3 py-1 rounded-full text-[10px] font-black">
+                                        {deal.equity}% EQUITY
+                                    </div>
+                                </div>
+
+                                {/* PRICE HUD */}
+                                <div className="grid grid-cols-2 gap-4 mb-8">
+                                    <div className="bg-black/40 p-4 rounded-xl border border-white/5">
+                                        <p className="text-[8px] mono text-gray-500 uppercase mb-1">List Price</p>
+                                        <p className="text-xl font-black text-white">${Math.round(deal.price).toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-black/40 p-4 rounded-xl border border-white/5">
+                                        <p className="text-[8px] mono text-gray-500 uppercase mb-1">Zestimate</p>
+                                        <p className="text-xl font-black text-white">${Math.round(deal.zest).toLocaleString()}</p>
+                                    </div>
+                                </div>
+
+                                {/* MATH BREAKDOWN SECTION */}
+                                <div className="space-y-3 mb-8 flex-grow">
+                                    <div className="flex justify-between text-[11px] mono border-b border-white/5 pb-2">
+                                        <span className="text-gray-500 italic">Est. ARV (Post-Rehab)</span>
+                                        <span className="text-white font-bold">${Math.round(deal.zest * 1.1).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[11px] mono border-b border-white/5 pb-2">
+                                        <span className="text-gray-500 italic">75% Refi Recapture</span>
+                                        <span className="text-[var(--neon)] font-bold">${Math.round(deal.zest * 1.1 * 0.75).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[11px] mono border-b border-white/5 pb-2">
+                                        <span className="text-gray-500 italic">Projected Cashflow</span>
+                                        <span className="text-white font-bold">${deal.rent}/mo</span>
+                                    </div>
+                                </div>
+
+                                {/* PREMIUM LINK FEATURE */}
+                                <a 
+                                    href={`https://www.zillow.com/homedetails/${deal.zpid}_zpid/`} 
+                                    target="_blank"
+                                    className="listing-btn w-full py-4 rounded-xl text-center text-xs uppercase tracking-[0.2em] shadow-[0_10px_20px_rgba(0,255,157,0.15)] flex items-center justify-center gap-3"
+                                >
+                                    <i className="fa-solid fa-up-right-from-square"></i> Access Premium Listing
+                                </a>
+                            </div>
+                        ))}
                     </div>
+
+                    {/* FOOTER HUD */}
+                    {results.length > 0 && (
+                        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 glass-nav px-8 py-3 rounded-full border border-[var(--neon)]/20 shadow-2xl z-50">
+                            <p className="text-[9px] mono font-bold tracking-widest text-white">
+                                <span className="text-[var(--neon)] pulse-slow">●</span> TOTAL ASSETS IDENTIFIED: {results.length} | REGION: {loc.toUpperCase()}
+                            </p>
+                        </div>
+                    )}
                 </div>
             );
         };
