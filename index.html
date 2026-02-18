@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEALSCOPE v7.5 | Professional Real Estate Engine</title>
+    <title>DEALSCOPE v7.8 | Defensive Institutional Build</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -11,15 +11,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;700;900&display=swap');
-        :root { --neon: #00ff9d; --bg: #010804; --panel: rgba(0, 255, 157, 0.03); }
-        body { background: var(--bg); color: var(--neon); font-family: 'Outfit', sans-serif; overflow-x: hidden; }
+        :root { --neon: #00ff9d; --bg: #010804; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Outfit', sans-serif; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: var(--panel); border: 1px solid rgba(0, 255, 157, 0.1); backdrop-filter: blur(10px); }
+        .glass { background: rgba(0, 255, 157, 0.03); border: 1px solid rgba(0, 255, 157, 0.1); backdrop-filter: blur(10px); }
         .glow-neon { text-shadow: 0 0 10px rgba(0, 255, 157, 0.4); }
         .equity-meter { stroke-dasharray: 251.2; transition: stroke-dashoffset 2s ease-out; }
-        .card-hover:hover { border-color: var(--neon); transform: translateY(-4px); transition: all 0.3s ease; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #004d2f; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -33,112 +30,100 @@
             const [results, setResults] = useState([]);
             const [isHunting, setIsHunting] = useState(false);
 
-            // ─── SENIOR LEVEL MULTI-LISTING ENGINE ───
             const runExecute = async () => {
                 if (!loc) return;
                 setIsHunting(true);
                 setResults([]);
                 
-                await new Promise(r => setTimeout(r, 1800));
+                // Simulate fetching data
+                await new Promise(r => setTimeout(r, 1500));
 
-                // Generating 12 Dynamic Results for the requested scale
-                const streetNames = ["Innovation", "Heritage", "Vista", "Oak", "Maple", "Grand", "Empire", "Pacific", "Highland", "Sunset", "Garey", "Mission"];
-                const data = Array.from({ length: 12 }).map((_, i) => {
-                    const price = 280000 + (Math.random() * 400000);
-                    const zest = price * (1.1 + Math.random() * 0.4); // Zestimate is 10-50% higher than list
-                    return {
-                        id: crypto.randomUUID(),
-                        zpid: (2000000000 + Math.floor(Math.random() * 900000000)).toString(),
-                        addr: `${100 + (i * 45)} ${streetNames[i]} Way, ${loc}`,
-                        price: Math.round(price),
-                        zest: Math.round(zest),
-                        rent: Math.round(price * 0.008), // Using 0.8% Rent Rule
-                        rehab: Math.round(price * 0.12), // 12% Rehab estimate
-                        tags: i % 3 === 0 ? ["BRRRR Target", "Deep Equity"] : ["Turnkey", "Value-Add"]
-                    };
-                });
+                const mockData = Array.from({ length: 12 }).map((_, i) => ({
+                    id: crypto.randomUUID(),
+                    zpid: (2147483647 - i).toString(),
+                    addr: `${100 + i * 15} High Growth Way, ${loc}`,
+                    price: 300000 + (Math.random() * 200000),
+                    zest: 450000 + (Math.random() * 200000),
+                    rehab: 40000,
+                    rent: 2800
+                }));
 
-                setResults(data);
+                setResults(mockData);
                 setIsHunting(false);
             };
 
             return (
                 <div className="min-h-screen pt-28 px-10">
                     <nav className="fixed top-0 left-0 w-full glass border-b border-emerald-900/40 p-6 flex justify-between items-center z-50">
-                        <h1 className="text-2xl font-black italic glow-neon tracking-tighter">DEALSCOPE <span className="text-white">v7.5</span></h1>
+                        <h1 className="text-2xl font-black italic glow-neon tracking-tighter">DEALSCOPE <span className="text-white">v7.8</span></h1>
                         <div className="flex gap-4">
-                            <input value={loc} onChange={(e) => setLoc(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && runExecute()} className="bg-black/60 border border-emerald-900/50 px-6 py-3 text-xs w-80 rounded italic outline-none text-white" placeholder="Enter Target ZIP or City..." />
-                            <button onClick={runExecute} className="bg-neon text-black px-10 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all">
+                            <input value={loc} onChange={(e) => setLoc(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && runExecute()} className="bg-black/60 border border-emerald-900/50 px-6 py-3 text-xs w-80 rounded outline-none text-white" placeholder="Enter ZIP (e.g. 91766)..." />
+                            <button onClick={runExecute} disabled={isHunting} className="bg-neon text-black px-10 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-white disabled:opacity-50">
                                 {isHunting ? 'SCANNING...' : 'EXECUTE HUNT'}
                             </button>
                         </div>
                     </nav>
 
-                    {/* RESULTS GRID */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-[1800px] mx-auto pb-20">
-                        {results.map(deal => {
-                            const arv = deal.zest * 1.05;
-                            const totalBasis = deal.price + deal.rehab;
-                            const equityDelta = arv - totalBasis;
-                            const equityPercent = Math.min(100, (equityDelta / deal.price) * 100);
-                            const refiMax = arv * 0.75; // 75% LTV Refi
-                            const capitalLeft = totalBasis - refiMax;
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1600px] mx-auto pb-20">
+                        {/* ─── LAYER 1: DEFENSIVE LIST RENDERING ─── */}
+                        {results && results.length > 0 ? (
+                            results.map(deal => {
+                                // LAYER 2: DEFENSIVE MATH (Ensures variables aren't undefined)
+                                const price = deal?.price ?? 0;
+                                const zest = deal?.zest ?? 0;
+                                const rehab = deal?.rehab ?? 0;
+                                const arv = zest * 1.05;
+                                const totalBasis = price + rehab;
+                                const equityDelta = arv - totalBasis;
+                                const equityPercent = price > 0 ? Math.min(100, (equityDelta / price) * 100) : 0;
+                                const refiMax = arv * 0.75;
+                                const capitalLeft = totalBasis - refiMax;
 
-                            return (
-                                <div key={deal.id} className="glass card-hover rounded-xl p-6 flex flex-col justify-between border border-emerald-900/20 relative overflow-hidden">
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="w-2/3">
-                                            <div className="flex gap-2 mb-2">
-                                                {deal.tags.map(t => <span key={t} className="text-[7px] font-black bg-neon/10 border border-neon/40 px-2 py-0.5 rounded uppercase">{t}</span>)}
+                                return (
+                                    <div key={deal.id} className="glass rounded-xl p-6 border border-emerald-900/20">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div className="w-2/3">
+                                                <h2 className="text-xl font-black text-white italic truncate uppercase">{deal?.addr || "Unknown Location"}</h2>
+                                                <a href={`https://www.zillow.com/homedetails/${deal?.zpid || ""}_zpid/`} target="_blank" className="text-[9px] text-blue-400 font-bold flex items-center gap-1 mt-1 hover:underline">
+                                                    <i className="fa-solid fa-up-right-from-square"></i> VIEW LISTING
+                                                </a>
                                             </div>
-                                            <h2 className="text-xl font-black text-white italic truncate uppercase">{deal.addr}</h2>
-                                            <a href={`https://www.zillow.com/homedetails/${deal.zpid}_zpid/`} target="_blank" className="text-[9px] text-blue-400 font-bold flex items-center gap-1 mt-1 hover:underline">
-                                                <i className="fa-solid fa-up-right-from-square"></i> VIEW LIVE LISTING
-                                            </a>
+                                            
+                                            {/* EQUITY GLOW METER */}
+                                            <div className="relative w-14 h-14 flex items-center justify-center">
+                                                <svg className="w-full h-full transform -rotate-90">
+                                                    <circle cx="28" cy="28" r="24" stroke="rgba(0, 255, 157, 0.1)" strokeWidth="3" fill="transparent" />
+                                                    <circle cx="28" cy="28" r="24" stroke="#00ff9d" strokeWidth="3" fill="transparent" strokeDasharray="150.7" strokeDashoffset={150.7 - (150.7 * (equityPercent / 100))} strokeLinecap="round" className="equity-meter" />
+                                                </svg>
+                                                <span className="absolute text-[8px] font-black text-white">{Math.round(equityPercent)}%</span>
+                                            </div>
                                         </div>
-                                        
-                                        {/* EQUITY METER SVG */}
-                                        <div className="relative w-16 h-16 flex items-center justify-center">
-                                            <svg className="w-full h-full transform -rotate-90">
-                                                <circle cx="32" cy="32" r="28" stroke="rgba(0, 255, 157, 0.1)" strokeWidth="4" fill="transparent" />
-                                                <circle cx="32" cy="32" r="28" stroke="#00ff9d" strokeWidth="4" fill="transparent" strokeDasharray="175.9" strokeDashoffset={175.9 - (175.9 * (equityPercent / 100))} strokeLinecap="round" className="equity-meter" />
-                                            </svg>
-                                            <span className="absolute text-[9px] font-black text-white">{Math.round(equityPercent)}%</span>
-                                        </div>
-                                    </div>
 
-                                    {/* BRRRR MATH PANEL */}
-                                    <div className="bg-black/40 rounded p-4 mb-4 border border-emerald-900/30">
-                                        <p className="text-[8px] mono font-bold text-emerald-800 uppercase mb-3 border-b border-emerald-900/20 pb-2">Institutional BRRRR Model</p>
-                                        <div className="grid grid-cols-2 gap-y-3 gap-x-4">
-                                            <div>
-                                                <p className="text-[7px] text-gray-500 uppercase">Purchase Price</p>
-                                                <p className="text-sm font-bold text-white">${deal.price.toLocaleString()}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-[7px] text-gray-500 uppercase">Est. Rehab</p>
-                                                <p className="text-sm font-bold text-white">${deal.rehab.toLocaleString()}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-[7px] text-emerald-400 uppercase">ARM Refi (75%)</p>
-                                                <p className="text-sm font-bold text-emerald-400">${Math.round(refiMax).toLocaleString()}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-[7px] text-gray-500 uppercase italic">Capital Left In</p>
-                                                <p className={`text-sm font-bold italic ${capitalLeft <= 0 ? 'text-neon' : 'text-red-400'}`}>
-                                                    {capitalLeft <= 0 ? 'INFINITE ROI' : `$${Math.round(capitalLeft).toLocaleString()}`}
-                                                </p>
+                                        {/* BRRRR BREAKDOWN PANEL */}
+                                        <div className="bg-black/40 rounded p-4 border border-emerald-900/30">
+                                            <p className="text-[7px] mono font-bold text-emerald-800 uppercase mb-3">BRRRR Calculation Breakdown</p>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p className="text-[7px] text-gray-500 uppercase">Purchase</p>
+                                                    <p className="text-sm font-bold text-white">${price.toLocaleString()}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[7px] text-gray-500 uppercase italic">Capital Left In</p>
+                                                    <p className={`text-sm font-bold italic ${capitalLeft <= 0 ? 'text-neon' : 'text-red-400'}`}>
+                                                        {capitalLeft <= 0 ? 'INFINITE' : `$${Math.round(capitalLeft).toLocaleString()}`}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div className="flex justify-between items-center text-[10px] font-black">
-                                        <div className="text-emerald-800 uppercase">Est. Rent: <span className="text-white">${deal.rent}/mo</span></div>
-                                        <div className="text-emerald-800 uppercase">Spread: <span className="text-white">${equityDelta.toLocaleString()}</span></div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })
+                        ) : (
+                            /* LAYER 3: FALLBACK UI (Prevents Blank Screen) */
+                            <div className="col-span-full py-20 text-center opacity-30 italic mono text-sm">
+                                {isHunting ? "SYST_SCAN: Analyzing geospatial data blocks..." : "TERMINAL_IDLE: Standing by for search injection."}
+                            </div>
+                        )}
                     </div>
                 </div>
             );
