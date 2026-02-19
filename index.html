@@ -1,101 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELARA VAPOR v21</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.browser.js"></script>
-    <style>
-        body { background: #050505; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-        .log-window { background: #000; border: 1px solid #1a1a1a; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #34d399; }
-        .glass-card { background: rgba(20, 20, 25, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
-    </style>
 </head>
-<body class="p-8">
-    <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-12 border-b border-zinc-800 pb-8">
-            <div>
-                <h1 class="text-3xl font-black italic text-blue-500 tracking-tighter">ELARA <span class="text-white">COMMAND</span></h1>
-                <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.3em]">Full-Stack Acquisition v20.0</p>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="startUnlockerProcess()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20">
-                    Run Heavy Lift
-                </button>
-            </div>
-        </header>
+<body class="bg-[#0a0a0b] text-zinc-100 font-sans antialiased h-screen overflow-hidden flex flex-col">
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div id="results" class="lg:col-span-2 space-y-4 h-[75vh] overflow-y-auto pr-2">
-                <div class="text-zinc-700 italic border-2 border-dashed border-zinc-900 rounded-3xl p-20 text-center">
-                    Run Python Scrubber & Click "Heavy Lift" to Populate.
-                </div>
-            </div>
-            
-            <div class="flex flex-col gap-4">
-                <div class="log-window p-6 rounded-3xl h-[50vh] overflow-y-auto">
-                    <p class="text-zinc-500 mb-4 font-bold">// SYSTEM_LOGS</p>
-                    <div id="log-content"></div>
-                </div>
-                
-                <div class="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase mb-4">VoIP Bridge Status</h3>
-                    <div id="call-status" class="text-sm font-mono text-zinc-400 italic">No Active Call</div>
-                </div>
+    <header class="p-6 border-b border-zinc-800/50 flex justify-between items-center bg-[#0a0a0b]">
+        <div>
+            <h1 class="text-xl font-black tracking-tighter text-blue-500 uppercase">Vapor<span class="text-white">Acquisition</span></h1>
+            <div id="status-indicator" class="text-[10px] text-zinc-500 flex items-center gap-2 mt-1 uppercase font-bold">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Offline
             </div>
         </div>
+        <button onclick="syncData()" class="bg-white text-black text-xs font-bold px-6 py-2.5 rounded-full hover:bg-zinc-200 transition-all">
+            SYNC DATA
+        </button>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden">
+        <main class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+            <div id="lead-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="col-span-full py-20 text-center text-zinc-600 italic border border-dashed border-zinc-800 rounded-2xl">
+                    Run the Python scrubber to generate 'db.json'
+                </div>
+            </div>
+        </main>
+
+        <aside class="w-96 border-l border-zinc-800/50 p-6 flex flex-col gap-4 bg-[#0c0c0e]">
+            <div class="flex-1 bg-black rounded-2xl p-4 border border-zinc-800/50 overflow-y-auto">
+                <h3 class="text-[10px] text-blue-500 font-bold uppercase mb-4 tracking-widest">Agent Logic</h3>
+                <div id="agent-logs" class="text-[11px] font-mono text-zinc-500 space-y-1">
+                    > Initialize...
+                </div>
+            </div>
+
+            <div class="bg-blue-600/5 rounded-2xl p-6 border border-blue-500/20">
+                <p class="text-[10px] text-blue-400 font-bold uppercase mb-2">Vapi Bridge</p>
+                <div id="call-status" class="text-sm italic text-zinc-400">Ready for Outbound.</div>
+            </div>
+        </aside>
     </div>
 
     <script>
-        const vapi = new Vapi('YOUR_VAPI_PUBLIC_KEY'); // Insert your Vapi Public Key
+        // REPLACE WITH YOUR REAL KEYS
+        const VAPI_KEY = "YOUR_VAPI_PUBLIC_KEY";
+        const ASSISTANT_ID = "YOUR_ASSISTANT_ID";
 
-        async function startUnlockerProcess() {
-            const results = document.getElementById('results');
-            const log = document.getElementById('log-content');
-            log.innerHTML += `<div>[SYSTEM]: Fetching Healed Database...</div>`;
-            
+        let vapiInstance = null;
+
+        // Initialize Vapi Safely
+        try {
+            vapiInstance = new Vapi(VAPI_KEY);
+            document.getElementById('status-indicator').innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Bridge Ready';
+        } catch (e) {
+            console.error("Vapi Init Error", e);
+        }
+
+        async function syncData() {
+            const container = document.getElementById('lead-container');
+            const logs = document.getElementById('agent-logs');
+            logs.innerHTML += `<div class="text-white">> Fetching Lead Database...</div>`;
+
             try {
-                const response = await fetch('database.json');
-                const leads = await response.json();
-                results.innerHTML = "";
-
-                for (const lead of leads) {
-                    log.innerHTML += `<div>[API]: Unlocking ${lead.owner}...</div>`;
-
-                    // PULLING DATA VIA BRIGHT DATA UNLOCKER
-                    // (Simulated logic using your script parameters)
-                    results.innerHTML += `
-                        <div class="glass-card p-6 rounded-[2rem] hover:border-blue-500/50 transition-all slide-up">
-                            <div class="flex justify-between items-start mb-4">
-                                <span class="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Unlocked Lead</span>
-                                <span class="text-zinc-600 text-[10px] mono">${lead.zip}</span>
-                            </div>
-                            <h3 class="text-xl font-bold mb-1">${lead.address}</h3>
-                            <p class="text-zinc-400 text-sm mb-6">Owner: ${lead.owner}</p>
-                            
-                            <div class="flex gap-3">
-                                <button onclick="makeCall('${lead.owner}', '${lead.address}')" 
-                                        class="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
-                                    Call Owner
-                                </button>
-                                <button class="px-4 bg-zinc-800 text-zinc-400 rounded-xl hover:bg-zinc-700 transition-all">
-                                    View Logic
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    log.parentElement.scrollTop = log.parentElement.scrollHeight;
-                }
+                const res = await fetch('db.json');
+                if (!res.ok) throw new Error("db.json not found");
+                const leads = await res.json();
+                
+                container.innerHTML = leads.map(l => `
+                    <div class="bg-zinc-900/50 border border-zinc-800 p-5 rounded-2xl hover:border-blue-500/50 transition-all">
+                        <div class="text-[10px] font-bold text-zinc-600 uppercase mb-2">${l.zip}</div>
+                        <h4 class="font-bold text-lg text-white truncate">${l.address}</h4>
+                        <p class="text-xs text-blue-400 mb-6 uppercase font-bold">${l.owner}</p>
+                        <button onclick="startCall('${l.owner}', '${l.address}')" class="w-full bg-blue-600 text-white text-[10px] font-black py-3 rounded-xl uppercase tracking-widest hover:bg-blue-500 transition-all">
+                            Initiate Vapi Call
+                        </button>
+                    </div>
+                `).join('');
+                logs.innerHTML += `<div class="text-green-500">> ${leads.length} Leads Unlocked.</div>`;
             } catch (err) {
-                log.innerHTML += `<div class="text-red-500 font-bold">[CRITICAL]: Database not found. Run Python first.</div>`;
+                logs.innerHTML += `<div class="text-red-500">> ERR: ${err.message}</div>`;
             }
         }
 
-        function makeCall(name, address) {
+        function startCall(name, address) {
             const status = document.getElementById('call-status');
             status.innerHTML = `<span class="text-green-500 font-bold">Calling ${name}...</span>`;
             
-            // Initiate the AI Call
-            vapi.start({
-                assistantId: 'YOUR_ASSISTANT_ID', // Replace with your Vapi Assistant ID
+            if (!vapiInstance) return;
+
+            vapiInstance.start({
+                assistantId: ASSISTANT_ID,
                 assistantOverrides: {
                     variableValues: {
                         ownerName: name,
@@ -104,8 +102,8 @@
                 }
             });
 
-            vapi.on('call-start', () => { status.innerText = "Call in progress..."; });
-            vapi.on('call-end', () => { status.innerText = "Call completed."; });
+            vapiInstance.on('call-start', () => status.innerText = "Active Call...");
+            vapiInstance.on('call-end', () => status.innerText = "Call Finished.");
         }
     </script>
 </body>
