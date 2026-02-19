@@ -2,101 +2,166 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>DEALSCOPE v14.0 | Elara Unlocker Agent</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.browser.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #050505; color: #fff; }
-        .deal-card { background: #0f0f12; border: 1px solid #1a1a1e; transition: all 0.2s ease; }
-        .deal-card:hover { border-color: #3b82f6; background: #13131a; }
-        .status-pill { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 4px; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;900&display=swap');
+        body { font-family: 'Outfit', sans-serif; background: #010204; color: #f1f5f9; margin: 0; height: 100vh; overflow: hidden; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.05); }
+        .unlocker-border { border: 1px solid #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+        .scroll-custom::-webkit-scrollbar { width: 3px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        .card-unlocked { border-left: 4px solid #3b82f6; transition: all 0.3s ease; }
+        .card-unlocked:hover { background: rgba(59, 130, 246, 0.05); transform: translateY(-2px); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .api-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
-<body class="p-8 h-screen flex flex-col overflow-hidden">
+<body class="flex flex-col h-screen" onload="syncLiveCSV()">
 
-    <div class="flex justify-between items-center mb-10 pb-6 border-b border-white/5">
-        <div>
-            <h1 class="text-2xl font-black italic tracking-tighter">DEALSCOPE <span class="text-blue-500 underline">PRO</span></h1>
-            <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-1">Status: Ready for Outbound Sequence</p>
+    <header class="p-5 glass border-b border-white/5 flex justify-between items-center z-50">
+        <div class="flex items-center gap-10">
+            <div>
+                <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">DEALSCOPE <span class="text-blue-500">v14.0</span></h1>
+                <p class="text-[8px] mono text-blue-400 font-bold uppercase tracking-[0.2em] api-pulse">Powered by Elara Unlocker API</p>
+            </div>
+            <div class="flex gap-4">
+                <div class="flex items-center bg-black/50 px-4 py-2 rounded-lg border border-white/10">
+                    <span class="status-dot bg-emerald-500"></span>
+                    <span class="text-[10px] mono text-emerald-500 font-bold uppercase">Database Linked</span>
+                </div>
+            </div>
         </div>
-        <div class="flex gap-4">
-            <button onclick="runHeavyLift()" class="bg-zinc-800 hover:bg-zinc-700 px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all">
-                1. Scrub & Extract
-            </button>
-            <button onclick="unlockContacts()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all">
-                2. Unlock Contacts
-            </button>
-        </div>
-    </div>
 
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8 overflow-hidden">
+        <div class="flex gap-6 items-center">
+            <div class="text-right">
+                <p class="text-[8px] mono text-slate-500 uppercase">VoIP Bridge</p>
+                <p id="vapi-status" class="text-[10px] font-black text-blue-500 uppercase italic">Standby</p>
+            </div>
+            <button onclick="syncLiveCSV()" class="bg-blue-600 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20">
+                Refresh Stream
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden">
         
-        <div class="lg:col-span-3 overflow-y-auto pr-4 space-y-4" id="lead-list">
-            <div class="h-64 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 rounded-[2rem] text-zinc-600">
-                <p class="text-sm italic">Waiting for CSV Heavy Lift...</p>
-            </div>
-        </div>
-
-        <div class="flex flex-col gap-6">
-            <div class="bg-zinc-900/50 rounded-[2rem] p-6 border border-white/5 flex-1 flex flex-col">
-                <h3 class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-6 underline">Execution Log</h3>
-                <div id="console" class="flex-1 font-mono text-[10px] text-zinc-500 space-y-2 overflow-y-auto">
-                    > System Boot... Ready.
+        <aside class="w-80 border-r border-white/5 p-6 flex flex-col gap-8 bg-black/40">
+            <div class="space-y-6">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">API Status</h2>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-slate-300">Proxy Rotation: Active</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                        <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-slate-300">Vapi VoIP: Connected</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-blue-600/10 rounded-[2rem] p-6 border border-blue-500/20">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-[10px] font-black text-blue-500 uppercase">VoIP Bridge</span>
-                    <div id="vapi-led" class="w-2 h-2 rounded-full bg-red-500"></div>
-                </div>
-                <div id="call-meta" class="text-xs font-bold text-zinc-400 mb-4 italic">No Active Call</div>
-                <button id="hangup" onclick="endCall()" class="w-full py-3 bg-red-600/20 text-red-500 rounded-xl text-[10px] font-black uppercase hidden">End Call</button>
+            <div class="mt-auto p-6 glass rounded-[2.5rem] unlocker-border">
+                <h3 class="text-[9px] font-black text-blue-400 uppercase mb-2">Acquisition Goal</h3>
+                <p class="text-[10px] text-slate-400 leading-relaxed font-bold">Targeting Vacant properties for immediate outbound AI calls.</p>
             </div>
-        </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto scroll-custom bg-[#020306]">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-slate-500 italic">Unlocked Object Stream</h2>
+                <div class="flex gap-4 text-[9px] mono text-slate-500 uppercase">
+                    <span>Source: CSV Pipeline</span>
+                    <span>Zone: web_unlocker1</span>
+                </div>
+            </div>
+
+            <div id="unlockerGrid" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+                </div>
+        </main>
+
+        <aside class="w-[480px] border-l border-white/5 p-6 bg-[#050508] flex flex-col gap-6">
+            <div class="h-full glass rounded-[3rem] p-8 border-white/5 flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xs font-black uppercase text-blue-400">Elara Intelligence</h3>
+                    <span class="text-[8px] mono text-slate-600 tracking-widest uppercase">VoIP Terminal</span>
+                </div>
+
+                <div id="requestConsole" class="flex-1 text-[11px] mono text-slate-300 leading-relaxed overflow-y-auto scroll-custom pr-2">
+                    <p class="text-blue-500 font-bold mb-2">// ELARA UNLOCKER READY</p>
+                    <p>// Awaiting object selection for Vapi outbound sequence...</p>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-white/5 flex flex-col gap-4">
+                    <button id="hangupBtn" onclick="stopCall()" class="hidden w-full bg-red-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 transition-all">
+                        End Active Call
+                    </button>
+                    <button class="w-full bg-white text-black py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">
+                        Acquisition Dashboard
+                    </button>
+                </div>
+            </div>
+        </aside>
     </div>
 
     <script>
-        const vapi = new Vapi('YOUR_VAPI_PUBLIC_KEY');
+        // --- KEYS ---
+        const VAPI_PUBLIC_KEY = 'YOUR_VAPI_PUBLIC_KEY';
         const ASSISTANT_ID = 'YOUR_ASSISTANT_ID';
 
-        // 1. DATA EXTRACTION LOGIC
-        async function runHeavyLift() {
-            const list = document.getElementById('lead-list');
-            const log = document.getElementById('console');
-            log.innerHTML += `<div class="text-white">> Initializing Python Scrubber Engine...</div>`;
-            
-            // This pulls from the db.json created by your fast_scrub.py script
-            const res = await fetch('db.json');
-            const leads = await res.json();
-            
-            list.innerHTML = leads.map(l => `
-                <div class="deal-card p-6 rounded-[2rem] flex items-center justify-between">
-                    <div>
-                        <div class="flex gap-2 mb-2">
-                            <span class="status-pill bg-blue-500/10 text-blue-400">VACANT</span>
-                            <span class="status-pill bg-zinc-800 text-zinc-500">${l.z}</span>
+        const vapi = new Vapi(VAPI_PUBLIC_KEY);
+
+        // --- 1. SYNC LIVE DATA ---
+        async function syncLiveCSV() {
+            const grid = document.getElementById('unlockerGrid');
+            try {
+                const res = await fetch('db.json');
+                const data = await res.json();
+                
+                grid.innerHTML = data.map(d => `
+                    <div class="glass p-6 rounded-[2.5rem] card-unlocked">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[8px] mono font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded uppercase">UNLOCKED</span>
+                            <span class="text-[9px] mono text-slate-600">${d.zip}</span>
                         </div>
-                        <h4 class="text-lg font-bold text-white">${l.a}</h4>
-                        <p class="text-xs text-zinc-500 font-medium uppercase tracking-wider">${l.o}</p>
+                        <h4 class="text-sm font-black uppercase text-white mb-1 truncate">${d.address}</h4>
+                        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">${d.owner}</p>
+                        
+                        <div class="mt-5 flex justify-between items-center">
+                            <button onclick="initiateVapiCall('${d.owner}', '${d.address}')" 
+                                    class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20">
+                                Call Owner
+                            </button>
+                            <div class="text-[8px] font-black text-blue-400 uppercase">DISTRESSED</div>
+                        </div>
                     </div>
-                    <button onclick="initiateCall('${l.o}', '${l.a}')" class="bg-white text-black px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all">
-                        Quick Call
-                    </button>
-                </div>
-            `).join('');
-            log.innerHTML += `<div class="text-green-500">> Successfully loaded ${leads.length} high-rank leads.</div>`;
+                `).join('');
+            } catch (e) {
+                console.error("DB Not Found. Ensure fast_scrub.py has been run.");
+            }
         }
 
-        // 2. VAPI CALL LOGIC
-        function initiateCall(name, address) {
-            const meta = document.getElementById('call-meta');
-            const led = document.getElementById('vapi-led');
-            const hangup = document.getElementById('hangup');
-            
-            meta.innerHTML = `Calling <span class="text-blue-400">${name}</span>...`;
-            led.classList.replace('bg-red-500', 'bg-green-500');
-            hangup.classList.remove('hidden');
+        // --- 2. VAPI ACTION ---
+        function initiateVapiCall(name, address) {
+            const consoleBox = document.getElementById('requestConsole');
+            const status = document.getElementById('vapi-status');
+            const hangupBtn = document.getElementById('hangupBtn');
+
+            status.innerText = "CALLING...";
+            status.classList.add('api-pulse');
+            hangupBtn.classList.remove('hidden');
+
+            consoleBox.innerHTML = `
+                <p class="text-blue-500 font-bold mb-4">// INITIATING VAPI VOIP BRIDGE</p>
+                <div class="space-y-2">
+                    <p class="text-emerald-500">TARGET: ${name}</p>
+                    <p class="text-slate-500 italic uppercase text-[9px]">LOC: ${address}</p>
+                    <p class="text-white mt-4 font-bold uppercase underline">Agent Elara is now speaking...</p>
+                </div>
+            `;
 
             vapi.start({
                 assistantId: ASSISTANT_ID,
@@ -105,15 +170,17 @@
                 }
             });
 
-            vapi.on('call-start', () => { meta.innerText = "Connected: AI Agent Speaking"; });
-            vapi.on('call-end', () => { 
-                meta.innerText = "Call Completed."; 
-                led.classList.replace('bg-green-500', 'bg-red-500');
-                hangup.classList.add('hidden');
+            vapi.on('call-end', () => {
+                status.innerText = "STANDBY";
+                status.classList.remove('api-pulse');
+                hangupBtn.classList.add('hidden');
+                consoleBox.innerHTML += `<p class="text-zinc-500 mt-4">// CALL COMPLETED. LOGGING RESPONSE...</p>`;
             });
         }
 
-        function endCall() { vapi.stop(); }
+        function stopCall() {
+            vapi.stop();
+        }
     </script>
 </body>
 </html>
