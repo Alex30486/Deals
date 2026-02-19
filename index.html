@@ -2,143 +2,241 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DEALSCOPE v14.0 | Acquisition Intelligence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEALSCOPE | Portfolio Acquisition Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.browser.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; margin: 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #fcfcfd; 
+            color: #1a1a21;
+        }
+
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .sidebar { background: #ffffff; border-right: 1px solid #e2e8f0; }
-        .stat-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; transition: all 0.2s; }
-        .stat-card:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .active-btn { background: #2563eb; color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+
+        .glass-sidebar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid #eef0f2;
+        }
+
+        .lead-card {
+            background: white;
+            border: 1px solid #eef0f2;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .lead-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .lead-card.active {
+            border-color: #2563eb;
+            background-color: #f8faff;
+            ring: 1px solid #2563eb;
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+        .btn-primary {
+            background: #1a1a21;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
 
-    <aside class="w-72 sidebar flex flex-col p-6">
-        <div class="mb-10">
-            <h1 class="text-xl font-black tracking-tighter text-blue-600">DEALSCOPE <span class="text-slate-900">v14.0</span></h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Unlocker Protocol</p>
+    <aside class="w-80 glass-sidebar flex flex-col p-8 z-10">
+        <div class="mb-12">
+            <h1 class="text-xl font-extrabold tracking-tighter italic">DEALSCOPE <span class="text-blue-600">v14.0</span></h1>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Institutional Lead Management</p>
         </div>
 
-        <nav class="space-y-1 mb-10">
-            <p class="text-[10px] font-bold text-slate-400 uppercase mb-4">Pipeline</p>
-            <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold bg-slate-100 text-blue-600">Unified Datastream</button>
-            <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50">Philadelphia Vacants</button>
-            <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50">New York Brokers</button>
-        </nav>
+        <div class="space-y-1 mb-10">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 block">Active Markets</label>
+            <nav class="space-y-2">
+                <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold bg-blue-50 text-blue-700 border border-blue-100">Philadelphia Metro</button>
+                <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50">White Plains Brokerage</button>
+                <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50">NY Commercial Leases</button>
+            </nav>
+        </div>
 
-        <div class="mt-auto p-4 bg-blue-50 rounded-2xl border border-blue-100">
-            <h3 class="text-xs font-bold text-blue-700 mb-1">System Status</h3>
-            <p class="text-[11px] text-blue-600/70 leading-relaxed">Vapi VoIP Bridge is active and ready for outbound dialing.</p>
+        <div class="mt-auto">
+            <div class="p-5 bg-slate-900 rounded-2xl text-white">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-bold uppercase text-slate-400">Bridge Connected</span>
+                </div>
+                <p class="text-[11px] leading-relaxed opacity-80">Elara Agent is online. Select an object to begin underwriting.</p>
+            </div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col bg-slate-50">
-        <header class="h-20 bg-white border-b border-e2e8f0 px-8 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <input id="zipSearch" oninput="filterLeads()" placeholder="Search Zip Code..." class="bg-slate-100 border-none rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 w-64">
+    <main class="flex-1 flex flex-col min-w-0 bg-[#f9fafb]">
+        <header class="h-20 bg-white/50 backdrop-blur-md border-b border-slate-100 px-10 flex items-center justify-between shrink-0">
+            <div class="relative w-96">
+                <input id="zipFilter" oninput="applyFilter()" type="text" placeholder="Filter by Zip Code..." 
+                class="w-full bg-slate-100/50 border border-slate-200 rounded-full px-6 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all">
             </div>
-            <button onclick="refreshData()" class="bg-slate-900 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-800 transition-all">
-                Sync CSV Data
-            </button>
+            <div class="flex items-center gap-4">
+                <button onclick="fetchLeads()" class="px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest border border-slate-200 hover:bg-white transition-all">
+                    Sync Dataset
+                </button>
+            </div>
         </header>
 
-        <div id="feed" class="flex-1 overflow-y-auto p-8 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div id="leadContainer" class="flex-1 overflow-y-auto p-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 custom-scroll">
             </div>
     </main>
 
-    <aside class="w-96 sidebar flex flex-col p-8">
-        <h2 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Lead Intelligence</h2>
-        
-        <div id="info-panel" class="flex-1">
-            <div class="h-full flex flex-col items-center justify-center text-center opacity-30">
-                <div class="w-12 h-12 border-2 border-slate-300 rounded-full mb-4"></div>
-                <p class="text-xs font-bold uppercase">Select a lead to initiate</p>
+    <aside class="w-[450px] bg-white border-l border-slate-100 flex flex-col shadow-2xl z-20">
+        <div class="p-10 flex-1 overflow-y-auto custom-scroll">
+            <div id="noSelection" class="h-full flex flex-col items-center justify-center text-center">
+                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-widest">Awaiting Selection</h3>
+                <p class="text-xs text-slate-400 mt-2">Choose a property from the stream<br>to initiate AI underwriting.</p>
+            </div>
+
+            <div id="selectionPanel" class="hidden animate-in fade-in slide-in-from-right-4 duration-300">
+                <div class="mb-8">
+                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full">Object Identified</span>
+                    <h2 id="displayAddr" class="text-2xl font-extrabold text-slate-900 leading-tight mt-4">---</h2>
+                    <p id="displayOwner" class="text-sm text-slate-500 mt-1 font-semibold uppercase tracking-wider">---</p>
+                </div>
+
+                <div class="space-y-4 py-8 border-y border-slate-100">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Zip Code</span>
+                        <span id="displayZip" class="text-xs font-bold mono">---</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Property Status</span>
+                        <span class="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">VACANT</span>
+                    </div>
+                </div>
+
+                <div class="mt-10">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 block">Elara VoIP Terminal</label>
+                    <div id="vapiLog" class="bg-slate-50 rounded-2xl p-6 h-48 overflow-y-auto mono text-[11px] text-slate-500 space-y-2 border border-slate-100">
+                        > Ready for outbound bridge...
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="mt-8 pt-8 border-t border-slate-100">
-            <button id="mainAction" class="hidden w-full py-4 rounded-xl text-sm font-black uppercase tracking-widest active-btn transition-transform active:scale-95">
-                Initiate Vapi Call
+        <div class="p-10 bg-slate-50 border-t border-slate-100">
+            <button id="callBtn" class="hidden w-full py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] btn-primary shadow-xl">
+                Start AI Outbound Call
             </button>
-            <button id="killBtn" onclick="vapi.stop()" class="hidden w-full mt-2 py-4 rounded-xl text-sm font-black uppercase tracking-widest bg-red-100 text-red-600">
-                End Connection
+            <button id="stopBtn" onclick="stopCall()" class="hidden w-full py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] bg-red-50 text-red-600 border border-red-100">
+                Terminate Connection
             </button>
         </div>
     </aside>
 
     <script>
-        const vapi = new Vapi('YOUR_PUBLIC_KEY');
+        const vapi = new Vapi('YOUR_VAPI_PUBLIC_KEY');
+        const ASSISTANT_ID = 'YOUR_ASSISTANT_ID';
         let leads = [];
+        let selectedIdx = null;
 
-        async function refreshData() {
+        async function fetchLeads() {
             try {
                 const res = await fetch('db.json');
                 leads = await res.json();
-                render(leads);
+                renderLeads(leads);
             } catch (e) {
-                alert("Please run your Python script to create db.json from your CSVs first.");
+                console.error("No db.json found. Run the Python Scrubber script.");
             }
         }
 
-        function render(data) {
-            const feed = document.getElementById('feed');
-            feed.innerHTML = data.map((l, i) => `
-                <div onclick="focusLead(${i})" class="stat-card cursor-pointer group">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="px-2 py-1 bg-blue-100 text-blue-700 text-[9px] font-black rounded uppercase">${l.type}</span>
-                        <span class="text-[10px] font-bold text-slate-400">${l.zip}</span>
+        function renderLeads(data) {
+            const container = document.getElementById('leadContainer');
+            container.innerHTML = data.map((l, i) => `
+                <div onclick="focusLead(${i})" class="lead-card p-8 rounded-[2rem] cursor-pointer ${selectedIdx === i ? 'active' : ''}">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${l.zip}</span>
+                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
                     </div>
-                    <h3 class="text-sm font-black text-slate-900 group-hover:text-blue-600 transition-colors">${l.address}</h3>
-                    <p class="text-xs text-slate-500 mt-1">${l.owner}</p>
+                    <h3 class="text-sm font-extrabold text-slate-900 leading-snug truncate">${l.address}</h3>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">${l.owner}</p>
+                    <div class="mt-8 flex justify-between items-center pt-5 border-t border-slate-50">
+                        <span class="text-[9px] font-black text-blue-600 uppercase">Analysis Complete</span>
+                        <svg class="w-4 h-4 text-slate-200" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>
+                    </div>
                 </div>
             `).join('');
         }
 
         function focusLead(i) {
+            selectedIdx = i;
             const l = leads[i];
-            const panel = document.getElementById('info-panel');
-            const btn = document.getElementById('mainAction');
             
-            panel.innerHTML = `
-                <div class="animate-in fade-in duration-500">
-                    <p class="text-[10px] font-black text-blue-600 uppercase mb-2">Target Locked</p>
-                    <h2 class="text-xl font-black text-slate-900 leading-tight mb-2">${l.address}</h2>
-                    <p class="text-sm text-slate-500 mb-6">Owner: ${l.owner}</p>
-                    
-                    <div class="space-y-4">
-                        <div class="p-4 bg-slate-50 rounded-xl">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Status</p>
-                            <p class="text-xs font-bold text-slate-700">Property Vacant / High Build Rank</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            btn.classList.remove('hidden');
+            document.getElementById('noSelection').classList.add('hidden');
+            document.getElementById('selectionPanel').classList.remove('hidden');
+            document.getElementById('callBtn').classList.remove('hidden');
+
+            document.getElementById('displayAddr').innerText = l.address;
+            document.getElementById('displayOwner').innerText = l.owner;
+            document.getElementById('displayZip').innerText = l.zip;
+
+            renderLeads(leads); // Refresh active state
+
+            const btn = document.getElementById('callBtn');
             btn.onclick = () => startCall(l);
         }
 
         function startCall(l) {
-            document.getElementById('killBtn').classList.remove('hidden');
+            document.getElementById('callBtn').classList.add('hidden');
+            document.getElementById('stopBtn').classList.remove('hidden');
+            logVapi(`Initiating Bridge: ${l.owner}`);
+
             vapi.start({
-                assistantId: 'YOUR_ASSISTANT_ID',
-                assistantOverrides: { variableValues: { ownerName: l.owner, propertyAddress: l.address } }
+                assistantId: ASSISTANT_ID,
+                assistantOverrides: {
+                    variableValues: { ownerName: l.owner, propertyAddress: l.address }
+                }
             });
         }
 
-        function filterLeads() {
-            const val = document.getElementById('zipSearch').value;
-            const filtered = leads.filter(l => l.zip.includes(val));
-            render(filtered);
+        function stopCall() {
+            vapi.stop();
         }
 
-        vapi.on('call-end', () => { document.getElementById('killBtn').classList.add('hidden'); });
+        vapi.on('call-start', () => logVapi("Status: Live - AI Speaking"));
+        vapi.on('call-end', () => {
+            logVapi("Status: Call Terminated");
+            document.getElementById('stopBtn').classList.add('hidden');
+            document.getElementById('callBtn').classList.remove('hidden');
+        });
 
-        refreshData();
+        function logVapi(msg) {
+            const log = document.getElementById('vapiLog');
+            log.innerHTML += `<div>> ${msg}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function applyFilter() {
+            const val = document.getElementById('zipFilter').value;
+            const filtered = leads.filter(l => l.zip.includes(val));
+            renderLeads(filtered);
+        }
+
+        fetchLeads();
     </script>
 </body>
 </html>
