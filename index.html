@@ -2,190 +2,147 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DEALSCOPE v14.0 | Elara Unlocker Agent</title>
+    <title>DEALSCOPE v15 | Bright Data Unlocker API</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;900&display=swap');
-        body { font-family: 'Outfit', sans-serif; background: #010204; color: #f1f5f9; margin: 0; height: 100vh; overflow: hidden; }
+        body { font-family: 'Outfit', sans-serif; background: #000000; color: #f8fafc; margin: 0; height: 100vh; overflow: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.05); }
-        .unlocker-border { border: 1px solid #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
-        .scroll-custom::-webkit-scrollbar { width: 3px; }
-        .scroll-custom::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        .card-unlocked { border-left: 4px solid #3b82f6; transition: all 0.3s ease; }
-        .card-unlocked:hover { background: rgba(59, 130, 246, 0.05); transform: translateY(-2px); }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .api-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .glass { background: rgba(8, 8, 12, 0.9); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.03); }
+        .api-glow { box-shadow: 0 0 40px rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; }
+        .scroll-none::-webkit-scrollbar { width: 0px; }
+        .status-badge { background: #3b82f615; border: 1px solid #3b82f630; color: #60a5fa; font-size: 8px; font-family: 'JetBrains Mono'; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
+        .card-reveal { animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .scanline { width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(59, 130, 246, 0.05) 50%); background-size: 100% 4px; pointer-events: none; position: absolute; z-index: 100; }
     </style>
 </head>
-<body class="flex flex-col h-screen">
+<body class="flex flex-col h-screen overflow-hidden">
+    <div class="scanline"></div>
 
-    <header class="p-5 glass border-b border-white/5 flex justify-between items-center z-50">
-        <div class="flex items-center gap-10">
+    <nav class="p-6 border-b border-white/5 glass flex justify-between items-center z-50">
+        <div class="flex items-center gap-12">
             <div>
-                <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">DEALSCOPE <span class="text-blue-500">v14.0</span></h1>
-                <p class="text-[8px] mono text-blue-400 font-bold uppercase tracking-[0.2em] api-pulse">Powered by Elara Unlocker API</p>
+                <h1 class="text-2xl font-black italic tracking-tighter uppercase leading-none">DEALSCOPE <span class="text-blue-500">v15</span></h1>
+                <p class="text-[9px] mono text-blue-400 mt-1 uppercase tracking-widest">Zone: web_unlocker1 | API_KEY: ACTIVE</p>
             </div>
+            
             <div class="flex gap-4">
-                <select id="marketSelect" onchange="unlockerQuery()" class="bg-black border border-white/10 rounded-lg px-3 py-2 text-[10px] mono outline-none focus:border-blue-500 w-56">
-                    <option value="ALL">UNIFIED DATASTREAM (1,000+)</option>
-                    <option value="PHILADELPHIA, PA">PHILADELPHIA (Vacant Bldg)</option>
-                    <option value="WHITE PLAINS, NY">WHITE PLAINS (Active Brokers)</option>
-                    <option value="NEW YORK, NY">NEW YORK (High-Value Leases)</option>
-                </select>
-                <input id="zipInput" oninput="unlockerQuery()" placeholder="ZIP UNLOCKER..." class="bg-black border border-white/10 rounded-lg px-3 py-2 text-[10px] mono outline-none focus:border-blue-500 w-32">
+                <div class="flex flex-col">
+                    <span class="text-[8px] mono text-slate-500 uppercase mb-1">Target Endpoint</span>
+                    <select id="endpoint" class="bg-black border border-white/10 rounded px-3 py-1.5 text-[10px] mono outline-none focus:border-blue-500">
+                        <option value="csv_vacant">UPLOADED://Vacant_Indicators_Bldg.csv</option>
+                        <option value="csv_brokers">UPLOADED://Active_Real_Estate_Brokers.csv</option>
+                        <option value="csv_leases">UPLOADED://data_gov_lse_rexus.csv</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div class="flex gap-6 items-center">
-            <div class="text-right">
-                <p class="text-[8px] mono text-slate-500 uppercase">Request Status</p>
-                <p class="text-[10px] font-black text-emerald-500 uppercase">200 OK | SUCCESS 100%</p>
+        <div class="flex items-center gap-8">
+            <div class="flex flex-col items-end">
+                <span class="text-[8px] mono text-slate-500 uppercase">Latency</span>
+                <span class="text-[10px] font-bold text-emerald-500">142ms</span>
             </div>
-            <button onclick="triggerUnlockAll()" class="bg-blue-600 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20">
-                Unlock Dataset
+            <button onclick="executeUnlocker()" class="api-glow bg-blue-600 text-white px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all">
+                Request Data Unlock
             </button>
         </div>
-    </header>
+    </nav>
 
     <div class="flex-1 flex overflow-hidden">
         
-        <aside class="w-80 border-r border-white/5 p-6 flex flex-col gap-8 bg-black/40">
-            <div class="space-y-6">
-                <h2 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">API Capabilities</h2>
+        <aside class="w-[450px] border-r border-white/5 p-8 flex flex-col gap-6 bg-black/50">
+            <div class="flex flex-col h-full glass rounded-[2rem] p-6 border-blue-500/20">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-[10px] font-black uppercase text-blue-400">Request Body</span>
+                    <span class="status-badge">POST 200</span>
+                </div>
                 
-                <div class="space-y-2">
-                    <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                        <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">Eliminate Complexity</span>
-                    </div>
-                    <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                        <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">Auto Proxy Rotation</span>
-                    </div>
-                    <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                        <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">Header Optimization</span>
-                    </div>
-                    <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                        <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">CAPTCHA Solving</span>
+                <div class="flex-1 mono text-[11px] text-slate-400 leading-relaxed overflow-y-auto scroll-none">
+<pre class="text-blue-300">
+async () => {
+  const res = await fetch('https://api.brightdata.com', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer API_KEY'
+    },
+    body: JSON.stringify({
+      zone: 'web_unlocker1',
+      url: 'TARGET_DATASET',
+      format: 'json'
+    })
+  });
+}
+</pre>
+                    <div id="liveConsole" class="mt-8 pt-8 border-t border-white/5 text-emerald-500">
+                        // System standby...<br>
+                        // Awaiting request execution.
                     </div>
                 </div>
-            </div>
-
-            <div class="mt-auto p-6 glass rounded-[2.5rem] unlocker-border">
-                <h3 class="text-[9px] font-black text-blue-400 uppercase mb-2">Cost Optimization</h3>
-                <p class="text-[10px] text-slate-400 leading-relaxed">You are charged <b>only</b> for successful requests to your target domain.</p>
             </div>
         </aside>
 
-        <main class="flex-1 p-8 overflow-y-auto scroll-custom">
+        <main class="flex-1 p-8 overflow-y-auto scroll-none relative">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-slate-500 italic">Unlocked Object Stream</h2>
-                <div class="flex gap-4 text-[9px] mono text-slate-500 uppercase">
-                    <span>Target: 4 CSV Datasets</span>
-                    <span>Protocol: HTTPS/UNLOCKER</span>
-                </div>
+                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-slate-500 italic">Unlocked Result Stream</h2>
+                <div id="itemCount" class="text-[10px] mono text-slate-600">Objects: 0</div>
             </div>
 
-            <div id="unlockerGrid" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+            <div id="dataGrid" class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
                 </div>
         </main>
-
-        <aside class="w-[480px] border-l border-white/5 p-6 bg-[#050508] flex flex-col gap-6">
-            <div class="h-full glass rounded-[3rem] p-8 border-white/5 flex flex-col">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xs font-black uppercase text-blue-400">Elara Request Intelligence</h3>
-                    <span class="text-[8px] mono text-slate-600">v14.0.2</span>
-                </div>
-
-                <div id="requestConsole" class="flex-1 text-[11px] mono text-slate-300 leading-relaxed overflow-y-auto scroll-custom pr-2">
-                    <p class="text-blue-500 font-bold mb-2">// ELARA UNLOCKER READY</p>
-                    <p>// Select a target object to initiate unblocking sequence.</p>
-                </div>
-
-                <div class="mt-6 pt-6 border-t border-white/5">
-                    <button onclick="parseToAcquisition()" class="w-full bg-white text-black py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all">
-                        Convert to Acquisition Lead
-                    </button>
-                </div>
-            </div>
-        </aside>
     </div>
 
     <script>
-        // Real Data from your CSVs - "Unlocked" into clean JSON
-        const dataObjects = [
-            { type: 'PROPERTY', title: '2525 S Beulah St', meta: 'Owner: Barr Dennis', loc: 'PHILADELPHIA, PA', zip: '19148', rank: 'Distressed' },
-            { type: 'PROPERTY', title: '5651 N 16Th St', meta: 'Owner: Odud Nataliya', loc: 'PHILADELPHIA, PA', zip: '19141', rank: 'Distressed' },
-            { type: 'BROKER', title: 'Acocella Beth A', meta: 'Firm: Coldwell Banker', loc: 'WHITE PLAINS, NY', zip: '10605', rank: 'Tier 1' },
-            { type: 'LEASE', title: 'Baker Properties LP', meta: 'Annual: $1,001,089', loc: 'WHITE PLAINS, NY', zip: '10604', rank: 'Gov-Anchor' },
-            { type: 'PROPERTY', title: '835 Granite St', meta: 'Owner: Commonwealth Of Pa', loc: 'PHILADELPHIA, PA', zip: '19124', rank: 'Distressed' },
-            { type: 'BROKER', title: 'Auer Janet', meta: 'Firm: Coldwell Banker', loc: 'PLEASANTVILLE, NY', zip: '10570', rank: 'Tier 2' },
-            { type: 'LEASE', title: 'US Postal Service', meta: 'Annual: $3,453', loc: 'SAINT PAUL, MN', zip: '55121', rank: 'Gov-Anchor' },
-            { type: 'PROPERTY', title: '4939 Chestnut St', meta: 'Owner: Williams Marshall', loc: 'PHILADELPHIA, PA', zip: '19139', rank: 'Distressed' }
+        const rawCSVData = [
+            { id: 101, title: '2525 S BEULAH ST', location: 'Philadelphia, PA', owner: 'Dennis Barr', type: 'VACANT_INDICATOR', score: '0.5' },
+            { id: 102, title: '5651 N 16TH ST', location: 'Philadelphia, PA', owner: 'Nataliya Odud', type: 'VACANT_INDICATOR', score: '0.5' },
+            { id: 201, title: 'ACOCELLA BETH A', location: 'White Plains, NY', owner: 'Coldwell Banker', type: 'ASSOCIATE_BROKER', score: 'High' },
+            { id: 301, title: 'BAKER PROPERTIES LP', location: 'White Plains, NY', owner: 'Donald Duthaler', type: 'GOV_LEASE', score: '$1.01M' },
+            { id: 103, title: '835 GRANITE ST', location: 'Philadelphia, PA', owner: 'Commonwealth of PA', type: 'VACANT_INDICATOR', score: '0.5' },
+            { id: 202, title: 'AUER JANET', location: 'Pleasantville, NY', owner: 'Coldwell Banker', type: 'ASSOCIATE_BROKER', score: 'High' },
+            { id: 302, title: 'US POSTAL SERVICE', location: 'Saint Paul, MN', owner: 'Roger Nord', type: 'GOV_LEASE', score: '$3.4k' }
         ];
 
-        function unlockerQuery() {
-            const mkt = document.getElementById('marketSelect').value;
-            const zip = document.getElementById('zipInput').value;
+        async function executeUnlocker() {
+            const consoleBox = document.getElementById('liveConsole');
+            const grid = document.getElementById('dataGrid');
+            const counter = document.getElementById('itemCount');
             
-            const filtered = dataObjects.filter(d => 
-                (mkt === "ALL" || d.loc === mkt) &&
-                (zip === "" || d.zip.startsWith(zip))
-            );
-            renderObjects(filtered);
+            grid.innerHTML = "";
+            consoleBox.innerHTML = "// INITIATING ASYNC FETCH...<br>// AUTHORIZING BEARER TOKEN...<br>// BYPASSING CAPTCHA...<br>// ROTATING PROXY IPS...";
+            
+            // Artificial delay to simulate real Unlocker API latency
+            await new Promise(r => setTimeout(r, 1200));
+            
+            consoleBox.innerHTML += "<br><span class='text-white'>// SUCCESS: RESPONSE_CODE_200</span><br>// PARSING RAW CSV TO CLEAN JSON...";
+            
+            await new Promise(r => setTimeout(r, 800));
+            
+            counter.innerText = `Objects: ${rawCSVData.length}`;
+            
+            rawCSVData.forEach((item, index) => {
+                setTimeout(() => {
+                    const card = document.createElement('div');
+                    card.className = "glass p-6 rounded-[2rem] border-white/5 card-reveal hover:border-blue-500/30 transition-all cursor-pointer";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="status-badge">${item.type}</span>
+                            <span class="text-[9px] mono text-slate-600">ID: ${item.id}</span>
+                        </div>
+                        <h4 class="text-sm font-black uppercase text-white mb-1">${item.title}</h4>
+                        <p class="text-[9px] text-slate-500 font-bold uppercase mb-4">${item.location}</p>
+                        <div class="pt-4 border-t border-white/5 flex justify-between items-center">
+                            <div class="text-[10px] text-blue-400 mono">${item.owner}</div>
+                            <div class="text-[10px] font-black text-white">${item.score}</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                }, index * 100);
+            });
         }
-
-        function renderObjects(data) {
-            const grid = document.getElementById('unlockerGrid');
-            grid.innerHTML = data.map(d => `
-                <div onclick="unlockObject('${d.title}', '${d.type}', '${d.meta}')" class="glass p-6 rounded-[2.5rem] card-unlocked cursor-pointer">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-[8px] mono font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded uppercase">${d.type}</span>
-                        <span class="text-[9px] mono text-slate-600">${d.zip}</span>
-                    </div>
-                    <h4 class="text-sm font-black uppercase text-white mb-1 truncate">${d.title}</h4>
-                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">${d.loc}</p>
-                    
-                    <div class="mt-5 flex justify-between items-end">
-                        <div class="text-[10px] text-white mono">${d.meta}</div>
-                        <div class="text-[8px] font-black text-blue-400 uppercase">${d.rank}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function unlockObject(title, type, meta) {
-            const console = document.getElementById('requestConsole');
-            console.innerHTML = `
-                <p class="text-blue-500 font-bold mb-4">// INITIATING UNLOCKER API REQUEST</p>
-                <div class="space-y-2">
-                    <p class="text-emerald-500">GET: target_data/${type.toLowerCase()}/${title.replace(/ /g, '_')}</p>
-                    <p class="text-slate-500 italic uppercase text-[9px]">Status: Rotating Proxies...</p>
-                    <p class="text-slate-500 italic uppercase text-[9px]">Status: Generating Real-User Fingerprint...</p>
-                    <p class="text-slate-500 italic uppercase text-[9px]">Status: Bypassing Anti-Bot Shield...</p>
-                    <p class="text-white mt-4 font-bold uppercase">Success: Object Unlocked.</p>
-                    <div class="mt-4 p-4 bg-white/5 rounded-xl border border-white/10">
-                        <p class="text-blue-400">Response Object:</p>
-                        <p class="text-[10px] mt-1 text-slate-400">{"title": "${title}", "type": "${type}", "data": "${meta}"}</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        function triggerUnlockAll() {
-            alert("Elara Unlocker: Batch-processing 1,000 records. Bypassing complexity. Charging for successful requests only.");
-        }
-
-        function parseToAcquisition() {
-            alert("Elara: Parsing Unlocked JSON into Acquisition Workflow. VoIP Bridge Ready.");
-        }
-
-        // Init
-        renderObjects(dataObjects);
     </script>
 </body>
 </html>
