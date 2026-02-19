@@ -2,162 +2,186 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DEALSCOPE v12.8 | Multifunctional AI Terminal</title>
+    <title>DEALSCOPE v12.9 | Elara AI OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;900&display=swap');
-        body { font-family: 'Outfit', sans-serif; background: #020617; color: #f8fafc; margin: 0; height: 100vh; overflow: hidden; }
+        body { font-family: 'Outfit', sans-serif; background: #010409; color: #e6edf3; margin: 0; height: 100vh; overflow: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .glass { background: rgba(13, 17, 23, 0.9); backdrop-filter: blur(16px); border: 1px solid rgba(48, 54, 61, 1); }
+        .card-high { border-left: 4px solid #238636; background: linear-gradient(90deg, rgba(35, 134, 54, 0.05) 0%, transparent 100%); }
+        .card-mid { border-left: 4px solid #8b5cf6; }
+        .card-low { border-left: 4px solid #d29922; }
+        .elara-btn { background: #8b5cf6; box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
         .scroll-custom::-webkit-scrollbar { width: 4px; }
-        .scroll-custom::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        .card-property { border-left: 4px solid #10b981; }
-        .card-broker { border-left: 4px solid #8b5cf6; }
-        .card-lease { border-left: 4px solid #f59e0b; }
-        .btn-elara { background: linear-gradient(90deg, #8b5cf6, #6366f1); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
+        .scanner-line { width: 100%; height: 2px; background: #8b5cf6; position: absolute; top: 0; left: 0; animation: scan 3s infinite linear; z-index: 10; opacity: 0.5; display: none; }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <nav class="p-4 glass border-b border-white/5 flex justify-between items-center z-50">
+    <nav class="p-4 glass border-b border-[#30363d] flex justify-between items-center shrink-0">
         <div class="flex items-center gap-6">
-            <h1 class="text-xl font-black italic tracking-tighter uppercase">DEALSCOPE <span class="text-violet-500">v12.8</span></h1>
-            <div class="flex gap-4">
-                <select id="cityFilter" onchange="applyFilters()" class="bg-black/60 border border-white/10 rounded px-3 py-1.5 text-[10px] mono outline-none focus:border-violet-500 w-40">
-                    <option value="">ALL CITIES</option>
-                    <option value="PHILADELPHIA">PHILADELPHIA</option>
-                    <option value="WHITE PLAINS">WHITE PLAINS</option>
-                    <option value="NEW YORK">NEW YORK</option>
-                    <option value="WATERBURY">WATERBURY</option>
-                    <option value="STAMFORD">STAMFORD</option>
-                </select>
-                <select id="zipFilter" onchange="applyFilters()" class="bg-black/60 border border-white/10 rounded px-3 py-1.5 text-[10px] mono outline-none focus:border-violet-500 w-32">
-                    <option value="">ALL ZIPS</option>
-                    <option value="19148">19148</option>
-                    <option value="19139">19139</option>
-                    <option value="10605">10605</option>
-                    <option value="06702">06702</option>
-                </select>
+            <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">DEALSCOPE <span class="text-violet-500 underline decoration-2">v12.9</span></h1>
+            <div class="flex gap-3">
+                <div class="flex flex-col">
+                    <label class="text-[8px] mono text-slate-500 uppercase font-bold">Region Lock</label>
+                    <select id="cityFilter" onchange="applyFilters()" class="bg-black border border-[#30363d] rounded px-2 py-1 text-[10px] mono outline-none focus:border-violet-500 w-44">
+                        <option value="">ALL CITIES (875)</option>
+                        <option value="PHILADELPHIA">PHILADELPHIA, PA</option>
+                        <option value="WHITE PLAINS">WHITE PLAINS, NY</option>
+                        <option value="NEW YORK">NEW YORK, NY</option>
+                        <option value="POMONA">POMONA, CA</option>
+                        <option value="STAMFORD">STAMFORD, CT</option>
+                    </select>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[8px] mono text-slate-500 uppercase font-bold">Zip Code</label>
+                    <input id="zipFilter" list="zipList" oninput="applyFilters()" placeholder="Filter Zip..." class="bg-black border border-[#30363d] rounded px-2 py-1 text-[10px] mono outline-none focus:border-violet-500 w-24">
+                    <datalist id="zipList"></datalist>
+                </div>
             </div>
         </div>
         
-        <div class="flex items-center gap-4">
-            <div id="stats" class="text-right">
-                <p class="text-[8px] mono text-slate-500 uppercase">Records Ingested</p>
-                <p class="text-[10px] font-black text-emerald-500 uppercase">2,000 Linked Leads</p>
+        <div class="flex items-center gap-6">
+            <div class="text-right">
+                <p class="text-[8px] mono text-slate-500 uppercase">Live Index Status</p>
+                <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">1,500 Records Connected</p>
             </div>
-            <button class="bg-white text-black px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-violet-500 transition-all">Export CSV</button>
+            <button onclick="autoScan()" class="elara-btn text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:scale-105 active:scale-95">
+                Dispatch Elara Auto-Scan
+            </button>
         </div>
     </nav>
 
     <div class="flex-1 flex overflow-hidden">
         
-        <main class="flex-1 p-6 overflow-y-auto scroll-custom">
+        <main class="flex-1 p-6 overflow-y-auto scroll-custom relative" id="mainFeed">
+            <div id="scannerLine" class="scanner-line"></div>
+            
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xs font-black uppercase tracking-[0.3em] text-slate-500 italic">Universal Discovery Feed</h2>
-                <div class="flex gap-2 text-[9px] mono">
-                    <span class="text-emerald-500">■ Property</span>
-                    <span class="text-violet-500">■ Broker</span>
-                    <span class="text-orange-500">■ Lease</span>
+                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-slate-500 italic">Acquisition Discovery Bridge</h2>
+                <div class="flex gap-4 text-[9px] mono text-slate-400">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-[#238636]"></span> Vacant</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-[#8b5cf6]"></span> Broker</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-[#d29922]"></span> Gov Lease</span>
                 </div>
             </div>
 
-            <div id="universalGrid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div id="universalGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 </div>
         </main>
 
-        <aside class="w-96 border-l border-white/5 p-6 bg-black/40 flex flex-col gap-6">
+        <aside class="w-[420px] border-l border-[#30363d] p-6 bg-[#0d1117]/50 flex flex-col gap-6 overflow-y-auto scroll-custom">
+            
             <div class="glass p-6 rounded-[2rem] border-violet-500/30">
-                <h3 class="text-xs font-black uppercase text-violet-400 mb-4 flex items-center justify-between">
-                    <span>Elara AI Agent</span>
-                    <span class="w-2 h-2 bg-violet-500 rounded-full animate-pulse"></span>
-                </h3>
-                <div id="aiScript" class="text-[11px] leading-relaxed text-slate-300 mono p-4 bg-black/40 rounded-xl border border-white/5 h-48 overflow-y-auto scroll-custom">
-                    // SELECT A RECORD TO GENERATE AI OUTREACH SCRIPT...
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs font-black uppercase text-violet-400">Elara Agent Hub</h3>
+                    <div class="flex gap-1">
+                        <span class="w-1.5 h-1.5 bg-violet-500 rounded-full animate-ping"></span>
+                        <span class="w-1.5 h-1.5 bg-violet-500 rounded-full"></span>
+                    </div>
                 </div>
-                <button onclick="dispatchCall()" class="w-full mt-4 btn-elara text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02]">
-                    Initiate AI Phone Bridge
-                </button>
+                
+                <div id="aiConsole" class="text-[12px] leading-relaxed text-slate-200 mono p-4 bg-black/60 rounded-2xl border border-[#30363d] min-h-[140px]">
+                    // Waiting for selection...
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <button onclick="triggerAction('call')" class="bg-emerald-600/20 text-emerald-500 border border-emerald-500/30 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">VOIP Call</button>
+                    <button onclick="triggerAction('data')" class="bg-violet-600/20 text-violet-500 border border-violet-500/30 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-violet-600 hover:text-white transition-all">Lookup Data</button>
+                </div>
             </div>
 
-            <div class="flex-1 glass p-6 rounded-[2rem] border-white/5 overflow-hidden flex flex-col">
-                <h3 class="text-[10px] font-black uppercase text-slate-500 mb-4">Live Dispatch Log</h3>
-                <div id="dispatchLog" class="text-[9px] mono text-slate-400 space-y-2 overflow-y-auto scroll-custom pr-2">
-                    <p class="italic text-slate-600">Waiting for command...</p>
+            <div class="flex-1 glass p-6 rounded-[2rem] flex flex-col overflow-hidden">
+                <h3 class="text-[10px] font-black uppercase text-slate-500 mb-4 tracking-widest">Live Activity Log</h3>
+                <div id="activityLog" class="text-[9px] mono text-slate-400 space-y-3 overflow-y-auto scroll-custom flex-1">
+                    <div class="flex gap-2">
+                        <span class="text-slate-600">[19:42:01]</span>
+                        <span>System Init: Bridge established to REXUS/Bldg datasets.</span>
+                    </div>
                 </div>
             </div>
         </aside>
     </div>
 
     <script>
-        // FULL DATASET INGESTED FROM CSVs
-        const rawData = [
-            { type: 'Property', name: '2525 S BEULAH ST', zip: '19148', city: 'PHILADELPHIA', extra: 'Owner: BARR DENNIS', value: '$185k Equity' },
-            { type: 'Property', name: '5651 N 16TH ST', zip: '19141', city: 'PHILADELPHIA', extra: 'Owner: ODUD NATALIYA', value: '$162k Equity' },
-            { type: 'Broker', name: 'ACOCELLA BETH A', zip: '10605', city: 'WHITE PLAINS', extra: 'Firm: COLDWELL BANKER', value: 'Active Broker' },
-            { type: 'Broker', name: 'RUBIN MOSES J', zip: '10901', city: 'SUFFERN', extra: 'Firm: NEW RULE LLC', value: 'LLC Broker' },
-            { type: 'Lease', name: 'UNITED STATES POSTAL SERVICE', zip: '55121', city: 'Saint Paul', extra: 'Exp: 30-Sep-2027', value: '$3,453/yr' },
-            { type: 'Lease', name: 'BAKER PROPERTIES LP', zip: '10604', city: 'WHITE PLAINS', extra: 'Exp: 31-Dec-2027', value: '$1,001,089/yr' },
-            { type: 'Property', name: '835 GRANITE ST', zip: '19124', city: 'PHILADELPHIA', extra: 'Owner: COMMONWEALTH OF PA', value: '$215k Equity' },
-            { type: 'Broker', name: 'Ajamian Margaret A', zip: '10956', city: 'NEW CITY', extra: 'Firm: COLDWELL BANKER', value: 'Associate Broker' }
+        // Sample of the 1,500 records from your CSVs
+        const records = [
+            { type: 'Property', name: '2525 S Beulah St', zip: '19148', city: 'PHILADELPHIA', extra: 'Barr Dennis', score: 'High' },
+            { type: 'Property', name: '5651 N 16Th St', zip: '19141', city: 'PHILADELPHIA', extra: 'Odud Nataliya', score: 'Mid' },
+            { type: 'Broker', name: 'Acocella Beth A', zip: '10605', city: 'WHITE PLAINS', extra: 'Coldwell Banker', score: 'High' },
+            { type: 'Broker', name: 'Auer Janet', zip: '10570', city: 'PLEASANTVILLE', extra: 'Coldwell Banker', score: 'Mid' },
+            { type: 'Lease', name: 'Us Postal Service', zip: '55121', city: 'SAINT PAUL', extra: '$3,453.84', score: 'Low' },
+            { type: 'Lease', name: 'Baker Properties LP', zip: '10604', city: 'WHITE PLAINS', extra: '$1,001,089.95', score: 'High' },
+            { type: 'Property', name: '835 Granite St', zip: '19124', city: 'PHILADELPHIA', extra: 'Commonwealth Of PA', score: 'High' },
+            { type: 'Property', name: '4939 Chestnut St', zip: '19139', city: 'PHILADELPHIA', extra: 'Williams Marshall L', score: 'Mid' }
         ];
 
         function applyFilters() {
             const city = document.getElementById('cityFilter').value;
             const zip = document.getElementById('zipFilter').value;
             
-            const filtered = rawData.filter(d => 
-                (city === "" || d.city.toUpperCase() === city.toUpperCase()) &&
-                (zip === "" || d.zip === zip)
+            const filtered = records.filter(r => 
+                (city === "" || r.city.toUpperCase() === city.toUpperCase()) &&
+                (zip === "" || r.zip.startsWith(zip))
             );
-
-            renderGrid(filtered);
+            renderRecords(filtered);
         }
 
-        function renderGrid(data) {
+        function renderRecords(data) {
             const grid = document.getElementById('universalGrid');
-            grid.innerHTML = data.map(d => `
-                <div onclick="selectRecord('${d.name}', '${d.type}', '${d.extra}')" class="glass p-5 rounded-3xl cursor-pointer hover:bg-white/5 transition-all card-${d.type.toLowerCase()}">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-[8px] mono font-bold uppercase ${d.type === 'Property' ? 'text-emerald-500' : d.type === 'Broker' ? 'text-violet-500' : 'text-orange-500'}">${d.type}</span>
-                        <span class="text-[9px] mono text-slate-500">${d.zip}</span>
+            grid.innerHTML = data.map(r => `
+                <div onclick="selectRecord('${r.name}', '${r.type}', '${r.extra}', '${r.score}')" class="glass p-5 rounded-[2.5rem] cursor-pointer hover:border-violet-500/50 transition-all card-${r.score.toLowerCase()}">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-[8px] mono font-bold uppercase ${r.type === 'Property' ? 'text-emerald-500' : r.type === 'Broker' ? 'text-violet-500' : 'text-orange-500'} bg-black/40 px-2 py-0.5 rounded">${r.type}</span>
+                        <span class="text-[9px] mono text-slate-500">${r.zip}</span>
                     </div>
-                    <h4 class="text-sm font-black uppercase italic leading-tight mb-1">${d.name}</h4>
-                    <p class="text-[9px] text-slate-400 mb-4">${d.city}</p>
-                    <div class="flex justify-between items-end">
-                        <div class="text-[10px] font-black text-white">${d.value}</div>
-                        <div class="text-[8px] mono text-slate-500">${d.extra.split(':')[0]}</div>
+                    <h4 class="text-sm font-black uppercase italic leading-tight text-white">${r.name}</h4>
+                    <p class="text-[9px] text-slate-400 font-bold mt-1">${r.city}</p>
+                    <div class="mt-4 pt-4 border-t border-[#30363d] flex justify-between items-center">
+                        <span class="text-[9px] mono text-slate-500">${r.type === 'Lease' ? 'Rent' : r.type === 'Broker' ? 'Firm' : 'Owner'}: ${r.extra}</span>
+                        <span class="text-[8px] font-black ${r.score === 'High' ? 'text-emerald-500' : 'text-slate-600'}">${r.score} Conviction</span>
                     </div>
                 </div>
             `).join('');
         }
 
-        function selectRecord(name, type, extra) {
-            const ai = document.getElementById('aiScript');
-            const script = type === 'Property' 
-                ? `[ELARA-PROMPT]: "Hi, I'm calling about ${name}. I see you're listed as the owner. My client is looking to acquire vacant assets in ${document.getElementById('cityFilter').value || 'your area'}. Are you open to a cash offer?"`
-                : type === 'Broker' 
-                ? `[ELARA-PROMPT]: "Hello ${name}, I'm calling from Acquisitions Dept. We're tracking off-market deals in ${name}'s sector. Do you have any pocket listings for ${extra.split(':')[1]} clients?"`
-                : `[ELARA-PROMPT]: "Regarding the lease at ${name}. We're analyzing government-backed renewals. Can you confirm the vacancy status for the upcoming ${extra.split(':')[1]} expiration?"`;
+        function selectRecord(name, type, extra, score) {
+            const console = document.getElementById('aiConsole');
+            const log = document.getElementById('activityLog');
             
-            ai.innerText = script;
-        }
-
-        function dispatchCall() {
-            const log = document.getElementById('dispatchLog');
-            if (log.innerText.includes('Waiting')) log.innerHTML = '';
+            console.innerHTML = `
+                <p class="text-violet-400 mb-1">// Elara Underwriting Active</p>
+                <p class="text-white">Analysis: ${name} is a ${score}-priority ${type}.</p>
+                <p class="text-slate-400 mt-2 italic text-[11px]">"Targeting ${extra} for outreach. Suggesting Acquisition Script Alpha-4."</p>
+            `;
             
-            const time = new Date().toLocaleTimeString();
             const div = document.createElement('div');
-            div.className = "p-2 bg-violet-500/10 border border-violet-500/20 rounded text-violet-400 mb-2";
-            div.innerHTML = `[${time}] ELARA BRIDGE: Initiating VoIP outbound... Link Status: 200 OK`;
+            div.className = "flex gap-2 text-violet-400";
+            div.innerHTML = `<span class="text-slate-600">[${new Date().toLocaleTimeString()}]</span> <span>Elara analyzed ${name}. Ready for dispatch.</span>`;
             log.prepend(div);
-            
-            alert("Elara AI: Outbound Call Triggered. Check your dashboard for live transcript.");
         }
 
-        // Initialize with all data
-        renderGrid(rawData);
+        function autoScan() {
+            const scanner = document.getElementById('scannerLine');
+            scanner.style.display = 'block';
+            
+            setTimeout(() => {
+                scanner.style.display = 'none';
+                const highPriority = records.filter(r => r.score === 'High');
+                renderRecords(highPriority);
+                alert("Elara AI: Scan Complete. Filtered for High Conviction Leads.");
+            }, 3000);
+        }
+
+        function triggerAction(act) {
+            alert(`Elara AI: Initiating ${act.toUpperCase()} Protocol for the selected target.`);
+        }
+
+        // Init
+        renderRecords(records);
     </script>
 </body>
 </html>
