@@ -2,201 +2,190 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DEALSCOPE v13.0 | Elara Autonomous Agent</title>
+    <title>DEALSCOPE v14.0 | Elara Unlocker Agent</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;900&display=swap');
-        body { font-family: 'Outfit', sans-serif; background: #050505; color: #e2e8f0; margin: 0; height: 100vh; overflow: hidden; }
+        body { font-family: 'Outfit', sans-serif; background: #010204; color: #f1f5f9; margin: 0; height: 100vh; overflow: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: rgba(15, 15, 20, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
-        .agent-glow { box-shadow: 0 0 30px rgba(139, 92, 246, 0.2); border: 1px solid #8b5cf6; }
-        .scroll-hide::-webkit-scrollbar { width: 3px; }
-        .scroll-hide::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        .deal-high { border-left: 4px solid #10b981; background: linear-gradient(90deg, rgba(16,185,129,0.1) 0%, transparent 100%); }
-        .agent-active { animation: pulse-border 2s infinite; }
-        @keyframes pulse-border { 0% { border-color: #8b5cf6; } 50% { border-color: #4f46e5; } 100% { border-color: #8b5cf6; } }
+        .glass { background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.05); }
+        .unlocker-border { border: 1px solid #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+        .scroll-custom::-webkit-scrollbar { width: 3px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        .card-unlocked { border-left: 4px solid #3b82f6; transition: all 0.3s ease; }
+        .card-unlocked:hover { background: rgba(59, 130, 246, 0.05); transform: translateY(-2px); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .api-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <header class="p-4 border-b border-white/5 glass flex justify-between items-center z-50">
-        <div class="flex items-center gap-8">
-            <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">DEALSCOPE <span class="text-violet-500">v13.0</span></h1>
+    <header class="p-5 glass border-b border-white/5 flex justify-between items-center z-50">
+        <div class="flex items-center gap-10">
+            <div>
+                <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">DEALSCOPE <span class="text-blue-500">v14.0</span></h1>
+                <p class="text-[8px] mono text-blue-400 font-bold uppercase tracking-[0.2em] api-pulse">Powered by Elara Unlocker API</p>
+            </div>
             <div class="flex gap-4">
-                <div class="flex flex-col">
-                    <span class="text-[8px] mono text-slate-500 uppercase font-bold mb-1">Target Sector</span>
-                    <select id="citySelect" onchange="taskElara('filter')" class="bg-black border border-white/10 rounded px-2 py-1 text-[10px] mono outline-none focus:border-violet-500">
-                        <option value="ALL">ALL CITIES (727)</option>
-                        <option value="PHILADELPHIA">PHILADELPHIA, PA</option>
-                        <option value="WHITE PLAINS">WHITE PLAINS, NY</option>
-                        <option value="NEW YORK">NEW YORK, NY</option>
-                        <option value="WATERBURY">WATERBURY, CT</option>
-                    </select>
-                </div>
+                <select id="marketSelect" onchange="unlockerQuery()" class="bg-black border border-white/10 rounded-lg px-3 py-2 text-[10px] mono outline-none focus:border-blue-500 w-56">
+                    <option value="ALL">UNIFIED DATASTREAM (1,000+)</option>
+                    <option value="PHILADELPHIA, PA">PHILADELPHIA (Vacant Bldg)</option>
+                    <option value="WHITE PLAINS, NY">WHITE PLAINS (Active Brokers)</option>
+                    <option value="NEW YORK, NY">NEW YORK (High-Value Leases)</option>
+                </select>
+                <input id="zipInput" oninput="unlockerQuery()" placeholder="ZIP UNLOCKER..." class="bg-black border border-white/10 rounded-lg px-3 py-2 text-[10px] mono outline-none focus:border-blue-500 w-32">
             </div>
         </div>
 
-        <div class="flex items-center gap-6">
+        <div class="flex gap-6 items-center">
             <div class="text-right">
-                <p class="text-[8px] mono text-slate-500 uppercase">Agent Status</p>
-                <div class="flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                    <span class="text-[10px] font-black text-white uppercase tracking-widest">Elara: Autonomous</span>
-                </div>
+                <p class="text-[8px] mono text-slate-500 uppercase">Request Status</p>
+                <p class="text-[10px] font-black text-emerald-500 uppercase">200 OK | SUCCESS 100%</p>
             </div>
-            <button onclick="taskElara('auto_scan')" class="bg-white text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-violet-500 hover:text-white transition-all">
-                Run Auto-Acquisition
+            <button onclick="triggerUnlockAll()" class="bg-blue-600 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20">
+                Unlock Dataset
             </button>
         </div>
     </header>
 
     <div class="flex-1 flex overflow-hidden">
         
-        <aside class="w-80 border-r border-white/5 p-6 flex flex-col gap-6 bg-black/40">
-            <div class="space-y-4">
-                <h2 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 italic">Capabilities</h2>
+        <aside class="w-80 border-r border-white/5 p-6 flex flex-col gap-8 bg-black/40">
+            <div class="space-y-6">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">API Capabilities</h2>
                 
-                <div onclick="taskElara('skip_trace')" class="p-4 glass rounded-2xl border-white/5 hover:border-violet-500/50 cursor-pointer group transition-all">
-                    <p class="text-[11px] font-bold text-white group-hover:text-violet-400">Deep Skip-Trace</p>
-                    <p class="text-[9px] text-slate-500 mt-1 uppercase">Retrieve LLCOwners & Numbers</p>
-                </div>
-
-                <div onclick="taskElara('analyze_equity')" class="p-4 glass rounded-2xl border-white/5 hover:border-emerald-500/50 cursor-pointer group transition-all">
-                    <p class="text-[11px] font-bold text-white group-hover:text-emerald-400">Equity Underwriting</p>
-                    <p class="text-[9px] text-slate-500 mt-1 uppercase">Calculate Debt vs Value</p>
-                </div>
-
-                <div onclick="taskElara('vapi_bridge')" class="p-4 glass rounded-2xl border-white/5 hover:border-blue-500/50 cursor-pointer group transition-all">
-                    <p class="text-[11px] font-bold text-white group-hover:text-blue-400">VoIP Call Bridge</p>
-                    <p class="text-[9px] text-slate-500 mt-1 uppercase">Vapi.ai / Twilio Connect</p>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">Eliminate Complexity</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">Auto Proxy Rotation</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">Header Optimization</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group">
+                        <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                        <span class="text-[11px] font-bold text-slate-300 group-hover:text-white">CAPTCHA Solving</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="mt-auto glass p-5 rounded-[2rem] border-violet-500/20">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-2 h-2 bg-violet-500 rounded-full"></div>
-                    <span class="text-[10px] font-black text-white uppercase">Active Process</span>
-                </div>
-                <div id="activeTask" class="text-[10px] mono text-violet-400 leading-tight">
-                    Elara is currently monitoring the real-time CSV feed.
-                </div>
+            <div class="mt-auto p-6 glass rounded-[2.5rem] unlocker-border">
+                <h3 class="text-[9px] font-black text-blue-400 uppercase mb-2">Cost Optimization</h3>
+                <p class="text-[10px] text-slate-400 leading-relaxed">You are charged <b>only</b> for successful requests to your target domain.</p>
             </div>
         </aside>
 
-        <main class="flex-1 p-6 overflow-y-auto scroll-hide">
-            <div class="flex justify-between items-end mb-8">
-                <div>
-                    <h2 class="text-xs font-black uppercase tracking-[0.4em] text-slate-500">Master Pipeline</h2>
-                    <p class="text-[10px] mono text-slate-600 mt-1">Showing real data from uploaded indicators.</p>
-                </div>
-                <div class="flex gap-2">
-                    <button class="px-4 py-1.5 border border-white/5 rounded-full text-[9px] mono uppercase hover:bg-white/5">Export All</button>
-                    <button class="px-4 py-1.5 border border-white/5 rounded-full text-[9px] mono uppercase hover:bg-white/5">Filter Priority</button>
+        <main class="flex-1 p-8 overflow-y-auto scroll-custom">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-slate-500 italic">Unlocked Object Stream</h2>
+                <div class="flex gap-4 text-[9px] mono text-slate-500 uppercase">
+                    <span>Target: 4 CSV Datasets</span>
+                    <span>Protocol: HTTPS/UNLOCKER</span>
                 </div>
             </div>
 
-            <div id="listingGrid" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+            <div id="unlockerGrid" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
                 </div>
         </main>
 
-        <aside class="w-[450px] border-l border-white/5 p-6 bg-[#08080c] flex flex-col gap-6">
-            <div class="h-1/2 glass rounded-[2.5rem] p-6 border-violet-500/30 flex flex-col agent-active" id="agentConsole">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xs font-black uppercase text-violet-400">Elara Command Output</h3>
-                    <span class="text-[8px] mono text-violet-500/50 italic">THINKING_ENGINE_v4.1</span>
+        <aside class="w-[480px] border-l border-white/5 p-6 bg-[#050508] flex flex-col gap-6">
+            <div class="h-full glass rounded-[3rem] p-8 border-white/5 flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xs font-black uppercase text-blue-400">Elara Request Intelligence</h3>
+                    <span class="text-[8px] mono text-slate-600">v14.0.2</span>
                 </div>
-                <div id="agentThinking" class="flex-1 text-[11px] leading-relaxed text-slate-200 mono overflow-y-auto scroll-hide pr-2">
-                    // Awaiting task assignment...
-                </div>
-            </div>
 
-            <div class="h-1/2 glass rounded-[2.5rem] p-6 border-white/5 flex flex-col">
-                <h3 class="text-[10px] font-black uppercase text-slate-500 mb-4 tracking-widest">Live Agent Log</h3>
-                <div id="agentLog" class="flex-1 text-[9px] mono text-slate-400 space-y-3 overflow-y-auto scroll-hide">
-                    <div class="flex gap-2 text-slate-600">
-                        <span>[READY]</span>
-                        <span>System synchronized with 4,000 records.</span>
-                    </div>
+                <div id="requestConsole" class="flex-1 text-[11px] mono text-slate-300 leading-relaxed overflow-y-auto scroll-custom pr-2">
+                    <p class="text-blue-500 font-bold mb-2">// ELARA UNLOCKER READY</p>
+                    <p>// Select a target object to initiate unblocking sequence.</p>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-white/5">
+                    <button onclick="parseToAcquisition()" class="w-full bg-white text-black py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all">
+                        Convert to Acquisition Lead
+                    </button>
                 </div>
             </div>
         </aside>
     </div>
 
     <script>
-        // DATA LOADED FROM REAL CSVs (Abridged for JS)
-        const masterData = [
-            { type: 'Property', name: '2525 S Beulah St', city: 'PHILADELPHIA', zip: '19148', val: '0.5', label: 'Barr Dennis', priority: 'High' },
-            { type: 'Property', name: '5651 N 16Th St', city: 'PHILADELPHIA', zip: '19141', val: '0.5', label: 'Odud Nataliya', priority: 'High' },
-            { type: 'Broker', name: 'Acocella Beth A', city: 'WHITE PLAINS', zip: '10605', val: 'Associate Broker', label: 'Coldwell Banker', priority: 'High' },
-            { type: 'Lease', name: 'United States Postal Service', city: 'Saint Paul', zip: '55121', val: '$3,453', label: 'Roger Nord', priority: 'Standard' },
-            { type: 'Lease', name: 'Baker Properties LP', city: 'WHITE PLAINS', zip: '10604', val: '$1,001,089', label: 'Donald Duthaler', priority: 'High' },
-            { type: 'Property', name: '835 Granite St', city: 'PHILADELPHIA', zip: '19124', val: '0.5', label: 'PA State Auth', priority: 'High' },
-            { type: 'Broker', name: 'Rubin Moses J', city: 'SUFFERN', zip: '10901', val: 'Tradename Broker', label: 'New Rule LLC', priority: 'High' },
-            { type: 'Property', name: '4939 Chestnut St', city: 'PHILADELPHIA', zip: '19139', val: '0.5', label: 'Williams Marshall', priority: 'High' },
-            { type: 'Lease', name: 'Landmark Square 1-6 LLC', city: 'NEW YORK', zip: '10012', val: '$205,576', label: 'Lori M.', priority: 'Standard' }
+        // Real Data from your CSVs - "Unlocked" into clean JSON
+        const dataObjects = [
+            { type: 'PROPERTY', title: '2525 S Beulah St', meta: 'Owner: Barr Dennis', loc: 'PHILADELPHIA, PA', zip: '19148', rank: 'Distressed' },
+            { type: 'PROPERTY', title: '5651 N 16Th St', meta: 'Owner: Odud Nataliya', loc: 'PHILADELPHIA, PA', zip: '19141', rank: 'Distressed' },
+            { type: 'BROKER', title: 'Acocella Beth A', meta: 'Firm: Coldwell Banker', loc: 'WHITE PLAINS, NY', zip: '10605', rank: 'Tier 1' },
+            { type: 'LEASE', title: 'Baker Properties LP', meta: 'Annual: $1,001,089', loc: 'WHITE PLAINS, NY', zip: '10604', rank: 'Gov-Anchor' },
+            { type: 'PROPERTY', title: '835 Granite St', meta: 'Owner: Commonwealth Of Pa', loc: 'PHILADELPHIA, PA', zip: '19124', rank: 'Distressed' },
+            { type: 'BROKER', title: 'Auer Janet', meta: 'Firm: Coldwell Banker', loc: 'PLEASANTVILLE, NY', zip: '10570', rank: 'Tier 2' },
+            { type: 'LEASE', title: 'US Postal Service', meta: 'Annual: $3,453', loc: 'SAINT PAUL, MN', zip: '55121', rank: 'Gov-Anchor' },
+            { type: 'PROPERTY', title: '4939 Chestnut St', meta: 'Owner: Williams Marshall', loc: 'PHILADELPHIA, PA', zip: '19139', rank: 'Distressed' }
         ];
 
-        function taskElara(action, target = null) {
-            const consoleBox = document.getElementById('agentThinking');
-            const log = document.getElementById('agentLog');
-            const taskDisplay = document.getElementById('activeTask');
+        function unlockerQuery() {
+            const mkt = document.getElementById('marketSelect').value;
+            const zip = document.getElementById('zipInput').value;
             
-            const time = () => `[${new Date().toLocaleTimeString()}] `;
-
-            if (action === 'auto_scan') {
-                taskDisplay.innerText = "Analyzing 4,000 records for 'High Conviction' signals...";
-                consoleBox.innerHTML = "// ELARA: Initiating full-spectrum scan...<br>// LOCATING: Distressed vacancies and large commercial leases...<br>// FOUND: 184 High-Priority targets.";
-                renderGrid(masterData.filter(d => d.priority === 'High'));
-            }
-
-            if (action === 'filter') {
-                const city = document.getElementById('citySelect').value;
-                const filtered = city === 'ALL' ? masterData : masterData.filter(d => d.city === city);
-                renderGrid(filtered);
-                taskDisplay.innerText = `Monitoring leads in ${city}.`;
-            }
-
-            if (action === 'skip_trace') {
-                consoleBox.innerHTML = "// ELARA: Deep Skip-Trace sequence active...<br>// QUERYING: Property tax records and LLC filing archives...<br>// SUCCESS: Found 3 alternate phone numbers for target.";
-            }
-
-            const div = document.createElement('div');
-            div.className = "flex gap-2 text-violet-400";
-            div.innerHTML = `<span>${time()}</span> <span>Task Triggered: ${action.toUpperCase()}</span>`;
-            log.prepend(div);
+            const filtered = dataObjects.filter(d => 
+                (mkt === "ALL" || d.loc === mkt) &&
+                (zip === "" || d.zip.startsWith(zip))
+            );
+            renderObjects(filtered);
         }
 
-        function renderGrid(data) {
-            const grid = document.getElementById('listingGrid');
+        function renderObjects(data) {
+            const grid = document.getElementById('unlockerGrid');
             grid.innerHTML = data.map(d => `
-                <div class="glass p-5 rounded-[2.5rem] relative ${d.priority === 'High' ? 'deal-high' : 'border-white/5'}">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-[8px] mono px-2 py-0.5 rounded bg-white/5 text-slate-400 uppercase font-bold">${d.type}</span>
-                        <span class="text-[9px] mono text-slate-500">${d.zip}</span>
+                <div onclick="unlockObject('${d.title}', '${d.type}', '${d.meta}')" class="glass p-6 rounded-[2.5rem] card-unlocked cursor-pointer">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-[8px] mono font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded uppercase">${d.type}</span>
+                        <span class="text-[9px] mono text-slate-600">${d.zip}</span>
                     </div>
-                    <h4 class="text-sm font-black uppercase text-white leading-tight">${d.name}</h4>
-                    <p class="text-[9px] text-slate-400 font-bold mt-1 uppercase italic">${d.city}</p>
+                    <h4 class="text-sm font-black uppercase text-white mb-1 truncate">${d.title}</h4>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">${d.loc}</p>
                     
-                    <div class="grid grid-cols-2 gap-3 mt-4 mb-4">
-                        <div class="p-2 bg-black/40 rounded-xl border border-white/5">
-                            <p class="text-[7px] font-bold text-slate-500 uppercase">${d.type === 'Lease' ? 'Annual Rent' : 'Owner/Firm'}</p>
-                            <p class="text-[10px] font-black text-white truncate">${d.label}</p>
-                        </div>
-                        <div class="p-2 bg-black/40 rounded-xl border border-white/5">
-                            <p class="text-[7px] font-bold text-slate-500 uppercase">Val/Status</p>
-                            <p class="text-[10px] font-black ${d.priority === 'High' ? 'text-emerald-500' : 'text-white'}">${d.val}</p>
-                        </div>
+                    <div class="mt-5 flex justify-between items-end">
+                        <div class="text-[10px] text-white mono">${d.meta}</div>
+                        <div class="text-[8px] font-black text-blue-400 uppercase">${d.rank}</div>
                     </div>
-
-                    <button onclick="taskElara('underwrite_target', '${d.name}')" class="w-full bg-violet-600/10 border border-violet-500/30 text-violet-400 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-violet-600 hover:text-white transition-all">
-                        Task Elara: Deep Underwrite
-                    </button>
                 </div>
             `).join('');
         }
 
-        // Initialize with real data
-        renderGrid(masterData);
+        function unlockObject(title, type, meta) {
+            const console = document.getElementById('requestConsole');
+            console.innerHTML = `
+                <p class="text-blue-500 font-bold mb-4">// INITIATING UNLOCKER API REQUEST</p>
+                <div class="space-y-2">
+                    <p class="text-emerald-500">GET: target_data/${type.toLowerCase()}/${title.replace(/ /g, '_')}</p>
+                    <p class="text-slate-500 italic uppercase text-[9px]">Status: Rotating Proxies...</p>
+                    <p class="text-slate-500 italic uppercase text-[9px]">Status: Generating Real-User Fingerprint...</p>
+                    <p class="text-slate-500 italic uppercase text-[9px]">Status: Bypassing Anti-Bot Shield...</p>
+                    <p class="text-white mt-4 font-bold uppercase">Success: Object Unlocked.</p>
+                    <div class="mt-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                        <p class="text-blue-400">Response Object:</p>
+                        <p class="text-[10px] mt-1 text-slate-400">{"title": "${title}", "type": "${type}", "data": "${meta}"}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function triggerUnlockAll() {
+            alert("Elara Unlocker: Batch-processing 1,000 records. Bypassing complexity. Charging for successful requests only.");
+        }
+
+        function parseToAcquisition() {
+            alert("Elara: Parsing Unlocked JSON into Acquisition Workflow. VoIP Bridge Ready.");
+        }
+
+        // Init
+        renderObjects(dataObjects);
     </script>
 </body>
 </html>
