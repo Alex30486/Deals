@@ -1,126 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>DEALSCOPE v15.0 | Live Hunter</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.browser.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&family=JetBrains+Mono&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0a0a0c; color: #fff; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .input-box { background: #151518; border: 1px solid #222; border-radius: 12px; }
-        .lead-card { background: #151518; border: 1px solid #222; transition: 0.3s; cursor: pointer; border-radius: 20px; }
-        .lead-card:hover { border-color: #3b82f6; background: #1a1a20; }
-        .active-target { border-color: #ef4444 !important; box-shadow: 0 0 20px rgba(239, 68, 68, 0.1); }
-    </style>
-</head>
-<body class="flex h-screen overflow-hidden">
+from flask import Flask, jsonify, request
+import requests
 
-    <aside class="w-96 border-r border-zinc-900 p-10 flex flex-col shrink-0">
-        <div class="mb-12">
-            <h1 class="text-2xl font-black italic tracking-tighter text-blue-500">DEALSCOPE <span class="text-white">v15</span></h1>
-            <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Live Acquisition Bridge</p>
-        </div>
+app = Flask(__name__)
 
-        <div class="space-y-6">
-            <div>
-                <label class="text-[10px] font-black text-zinc-500 uppercase mb-3 block">1. Choose Location</label>
-                <input id="locInput" type="text" placeholder="e.g. Philadelphia, PA" class="w-full input-box px-4 py-4 text-sm outline-none focus:border-blue-500 transition-all">
-            </div>
-            
-            <button onclick="triggerScrape()" class="w-full py-4 bg-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 shadow-xl shadow-blue-900/20 transition-all">
-                Execute Live Scrape
-            </button>
-        </div>
+# --- THE GRABBER ---
+def get_live_leads(city):
+    url = f"https://nominatim.openstreetmap.org/search?q=house+in+{city}&format=json&addressdetails=1&limit=10"
+    headers = {'User-Agent': 'Elara_Hunter_v16'}
+    try:
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        return [{"address": item.get('display_name').split(',')[0], 
+                 "owner": "Property Lead", 
+                 "zip": item.get('address', {}).get('postcode', 'N/A')} for item in data]
+    except:
+        return []
 
-        <div class="mt-auto">
-            <div id="vapiStatus" class="p-6 bg-zinc-900 rounded-[2rem] border border-zinc-800">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                    <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Elara Protocol Ready</span>
+@app.route('/api/scrape')
+def scrape():
+    city = request.args.get('city', 'Philadelphia')
+    return jsonify(get_live_leads(city))
+
+# --- THE FRONTEND ---
+@app.route('/')
+def index():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>ELARA v16 | Live Dial</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.browser.js"></script>
+        <style>
+            body { background: #020617; color: white; font-family: sans-serif; }
+            .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        </style>
+    </head>
+    <body class="p-10">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex justify-between items-center mb-10">
+                <div>
+                    <h1 class="text-3xl font-black text-blue-500 italic">ELARA <span class="text-white font-light">VOICE</span></h1>
+                    <p id="vapi-status" class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">● AI Agent Standby</p>
                 </div>
-                <p id="log" class="text-[11px] text-zinc-400 mono italic">> Awaiting command...</p>
+                <input id="city" type="text" placeholder="Miami, FL" class="bg-slate-900 border-none rounded-full px-6 py-2 text-sm outline-none ring-1 ring-slate-800 focus:ring-blue-500">
+                <button onclick="hunt()" class="bg-blue-600 px-6 py-2 rounded-full text-xs font-bold uppercase hover:bg-blue-400 transition">Scrape</button>
+            </div>
+
+            <div id="feed" class="grid grid-cols-1 gap-4">
+                <p class="text-center opacity-20 py-20 italic">No targets locked. Enter a city above.</p>
             </div>
         </div>
-    </aside>
 
-    <main class="flex-1 p-10 overflow-y-auto custom-scroll">
-        <div id="feed" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="col-span-full py-40 text-center opacity-20">
-                <p class="mono text-xs">NO ACTIVE TARGETS FOUND IN CURRENT ZONE</p>
-            </div>
-        </div>
-    </main>
+        <script>
+            // CONFIG YOUR KEYS HERE
+            const vapi = new Vapi('YOUR_VAPI_PUBLIC_KEY'); 
+            const ASSISTANT_ID = 'YOUR_ASSISTANT_ID';
 
-    <aside class="w-[400px] bg-zinc-900/50 border-l border-zinc-900 p-10 flex flex-col shrink-0">
-        <div id="targetInfo" class="hidden h-full flex flex-col">
-            <span class="text-[10px] font-black text-red-500 uppercase tracking-widest">Target Locked</span>
-            <h2 id="dispAddr" class="text-2xl font-extrabold mt-6 leading-tight">---</h2>
-            <p id="dispOwner" class="text-sm text-zinc-500 mono mt-2">---</p>
-            
-            <div class="mt-auto space-y-4">
-                <button id="callBtn" class="w-full py-6 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-blue-500 hover:text-white transition-all">
-                    Initiate AI Negotiation
-                </button>
-            </div>
-        </div>
-    </aside>
+            vapi.on('call-start', () => { document.getElementById('vapi-status').innerText = '● CALL IN PROGRESS'; document.getElementById('vapi-status').classList.add('text-red-500'); });
+            vapi.on('call-end', () => { document.getElementById('vapi-status').innerText = '● AI Agent Standby'; document.getElementById('vapi-status').classList.remove('text-red-500'); });
 
-    <script>
-        const vapi = new Vapi('YOUR_PUBLIC_KEY');
-        let leads = [];
-
-        async function triggerScrape() {
-            const loc = document.getElementById('locInput').value;
-            if(!loc) return alert("Enter a city first.");
-            
-            document.getElementById('log').innerText = `> SCRAPING_${loc.toUpperCase()}...`;
-            
-            // In a real environment, this would call your Python backend.
-            // For now, we fetch the db.json that Python generates.
-            setTimeout(async () => {
-                try {
-                    const res = await fetch('db.json');
-                    leads = await res.json();
-                    renderLeads();
-                    document.getElementById('log').innerText = `> ${leads.length}_TARGETS_UNLOCKED`;
-                } catch(e) {
-                    document.getElementById('log').innerText = "> ERR: RUN_ELARA_GRABBER.PY";
-                }
-            }, 1000);
-        }
-
-        function renderLeads() {
-            const feed = document.getElementById('feed');
-            feed.innerHTML = leads.map((l, i) => `
-                <div onclick="lockTarget(${i})" id="card-${i}" class="lead-card p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">${l.zip}</span>
-                        <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+            async function hunt() {
+                const city = document.getElementById('city').value || 'Philadelphia';
+                const res = await fetch('/api/scrape?city=' + city);
+                const data = await res.json();
+                
+                document.getElementById('feed').innerHTML = data.map(l => `
+                    <div class="glass p-6 rounded-3xl flex justify-between items-center">
+                        <div>
+                            <p class="text-[10px] text-blue-400 font-bold uppercase mb-1">${l.zip}</p>
+                            <h3 class="font-bold text-lg">${l.address}</h3>
+                        </div>
+                        <button onclick="startCall('${l.address}')" class="bg-white text-black px-8 py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-blue-500 hover:text-white transition">
+                            Call Owner
+                        </button>
                     </div>
-                    <h3 class="text-sm font-bold truncate">${l.address}</h3>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">${l.owner}</p>
-                </div>
-            `).join('');
-        }
+                `).join('');
+            }
 
-        function lockTarget(i) {
-            const l = leads[i];
-            document.getElementById('targetInfo').classList.remove('hidden');
-            document.getElementById('dispAddr').innerText = l.address;
-            document.getElementById('dispOwner').innerText = l.owner;
-            
-            document.querySelectorAll('.lead-card').forEach(c => c.classList.remove('active-target'));
-            document.getElementById(`card-${i}`).classList.add('active-target');
-
-            document.getElementById('callBtn').onclick = () => {
-                vapi.start({
-                    assistantId: 'YOUR_ASSISTANT_ID',
-                    assistantOverrides: { variableValues: { ownerName: l.owner, propertyAddress: l.address } }
+            function startCall(address) {
+                console.log("Initiating call for: " + address);
+                vapi.start(ASSISTANT_ID, {
+                    assistantOverrides: {
+                        variableValues: { propertyAddress: address }
+                    }
                 });
-            };
-        }
-    </script>
-</body>
-</html>
+            }
+        </script>
+    </body>
+    </html>
+    """
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
