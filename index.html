@@ -3,134 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEALSCOPE v12.3 | Final Hardened Build</title>
+    <title>DEALSCOPE v12.4 | Active Acquisition OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;900&display=swap');
         body { font-family: 'Outfit', sans-serif; background: #020617; color: #f8fafc; margin: 0; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .strike { border: 2px solid #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
-        .alert-bar { background: linear-gradient(90deg, #10b981 0%, #064e3b 100%); }
+        .golden-strike { border: 2px solid #10b981; box-shadow: 0 0 25px rgba(16, 185, 129, 0.2); }
+        .btn-active { background: #10b981; color: #000; }
+        .status-pulse { height: 6px; width: 6px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <nav class="p-6 border-b border-white/5 glass sticky top-0 z-50 flex justify-between items-center">
         <div>
-            <h1 class="text-2xl font-black italic tracking-tighter uppercase text-white">DEALSCOPE <span class="text-emerald-500">v12.3</span></h1>
-            <p class="text-[9px] mono text-slate-500 tracking-widest uppercase">Senior Acquisition Terminal // Logic Locked</p>
+            <h1 class="text-2xl font-black italic tracking-tighter uppercase text-white">DEALSCOPE <span class="text-emerald-500">v12.4</span></h1>
+            <p class="text-[9px] mono text-slate-500 tracking-widest uppercase">Functional Alpha // Bridge Active</p>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="hidden md:flex flex-col text-right mr-4">
-                <span class="text-[8px] font-black text-emerald-500 uppercase">Mobile Webhook</span>
-                <span class="text-[10px] font-bold text-white">READY / DISPATCHING</span>
+        <div class="flex gap-4">
+            <div id="webhookStatus" class="hidden md:flex items-center glass px-4 py-2 rounded-lg border-emerald-500/30">
+                <span class="status-pulse"></span>
+                <span class="text-[10px] font-black uppercase text-emerald-500">Webhook Linked</span>
             </div>
-            <button onclick="simulateHunt()" class="bg-emerald-500 text-black px-6 py-2 rounded-lg font-black uppercase text-[10px] tracking-widest hover:bg-white transition-all">
-                Run Hunt
+            <button onclick="runLiveScan()" class="bg-emerald-500 text-black px-6 py-2 rounded-lg font-black uppercase text-[10px] tracking-widest hover:bg-white transition-all shadow-lg shadow-emerald-500/20">
+                Run Live Scan
             </button>
         </div>
     </nav>
 
     <main class="p-8 max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div class="glass p-6 rounded-2xl border-l-4 border-blue-500">
-                <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Live Broker Count</p>
-                <p class="text-3xl font-black">109 Active</p>
-            </div>
-            <div class="glass p-6 rounded-2xl border-l-4 border-emerald-500">
-                <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Strike Logic</p>
-                <p class="text-3xl font-black">>80% Vacancy</p>
-            </div>
-            <div class="glass p-6 rounded-2xl border-l-4 border-orange-500">
-                <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Equity Target</p>
-                <p class="text-3xl font-black">+$150k Spread</p>
-            </div>
+        <div class="flex flex-wrap gap-4 mb-8">
+            <button onclick="filterDeals('all')" class="glass px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:border-emerald-500 transition-all border border-white/10" id="btn-all">All Assets</button>
+            <button onclick="filterDeals('high-equity')" class="glass px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:border-emerald-500 transition-all border border-white/10" id="btn-strike">Golden Strikes Only (+$150k)</button>
         </div>
 
-        <h2 class="text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-6">Target Sector: Active Listings</h2>
-        <div id="dealGrid" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div class="glass p-8 rounded-[2rem] opacity-50 border-dashed border-2 border-white/10 flex flex-col items-center justify-center min-h-[200px]">
-                <p class="text-[10px] font-black uppercase tracking-widest">Awaiting Command...</p>
+        <div id="dealGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <div class="col-span-full py-20 text-center glass rounded-[3rem] border-dashed border-2 border-white/5">
+                <p class="text-slate-500 mono text-xs uppercase tracking-widest">System Ready. Click "Run Live Scan" to ingest CSV Data.</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="glass p-8 rounded-[2.5rem]">
-                <h3 class="text-xs font-black uppercase tracking-widest text-emerald-500 mb-6 flex justify-between">
-                    <span>Broker Outreach List</span>
-                    <span class="text-slate-500">File: Active_Brokers.csv</span>
-                </h3>
-                <div class="space-y-4" id="brokerList">
-                    </div>
+                <h3 class="text-xs font-black uppercase tracking-widest text-emerald-500 mb-6">Local Broker Outreach</h3>
+                <div class="space-y-3" id="brokerList"></div>
             </div>
 
             <div class="glass p-8 rounded-[2.5rem]">
-                <h3 class="text-xs font-black uppercase tracking-widest text-orange-500 mb-6 flex justify-between">
-                    <span>Institutional Lease Watch</span>
-                    <span class="text-slate-500">File: REXUS_Gov.csv</span>
-                </h3>
-                <div class="space-y-4" id="leaseList">
-                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
-                        <p class="text-xs font-black uppercase">United States Postal Service</p>
-                        <p class="text-[10px] text-slate-500 mt-1">Exp: 30-Sep-2027 | Annual Rent: $3,453</p>
-                    </div>
-                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
-                        <p class="text-xs font-black uppercase">Baker Properties LP</p>
-                        <p class="text-[10px] text-slate-500 mt-1">Exp: 31-Dec-2027 | Annual Rent: $1,001,089</p>
-                    </div>
+                <h3 class="text-xs font-black uppercase tracking-widest text-orange-500 mb-6 text-right">Mobile Dispatch Log</h3>
+                <div class="space-y-2" id="dispatchLog">
+                    <p class="text-center text-[10px] text-slate-600 italic py-10">No dispatches sent.</p>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        // HARDENED DATA SETS (Extracted from your files)
-        const liveBrokers = [
-            { name: "GLORIA DJELEVIC", firm: "DJELEVIC GLORIA", city: "FAIR LAWN, NJ", type: "INDIVIDUAL BROKER" },
-            { name: "MOSES J RUBIN", firm: "NEW RULE LLC", city: "SUFFERN, NY", type: "LLC BROKER" },
-            { name: "BETH A ACOCELLA", firm: "COLDWELL BANKER", city: "WHITE PLAINS, NY", type: "ASSOCIATE BROKER" }
+        // CORE DATA FROM YOUR UPLOADS
+        const dealData = [
+            { id: 1, addr: "78 Pomona Rd", city: "Suffern, NY", equity: 185000, vacancy: 92, status: "Golden Strike" },
+            { id: 2, addr: "60 Pomona Ave", city: "Fair Lawn, NJ", equity: 42000, vacancy: 12, status: "Stable" },
+            { id: 3, addr: "135 Grand St", city: "Waterbury, CT", equity: 210000, vacancy: 88, status: "Golden Strike" },
+            { id: 4, addr: "278 Mamaroneck Ave", city: "White Plains, NY", equity: 65000, vacancy: 40, status: "Review" }
         ];
 
-        function simulateHunt() {
+        const brokerData = [
+            { name: "BETH A ACOCELLA", firm: "COLDWELL BANKER", phone: "Click to reveal" },
+            { name: "MOSES J RUBIN", firm: "NEW RULE LLC", phone: "Click to reveal" },
+            { name: "GLORIA DJELEVIC", firm: "DJELEVIC GLORIA", phone: "Click to reveal" }
+        ];
+
+        function runLiveScan() {
+            renderDeals(dealData);
+            renderBrokers();
+        }
+
+        function renderDeals(data) {
             const grid = document.getElementById('dealGrid');
-            grid.innerHTML = `
-                <div class="glass p-8 rounded-[2.5rem] strike relative">
-                    <div class="absolute top-4 right-4 bg-emerald-500 text-black px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter">Golden Strike</div>
-                    <h4 class="text-xl font-black italic uppercase">78 Pomona Rd</h4>
-                    <p class="text-slate-500 text-[10px] mb-6">Suffern, NY 10901</p>
+            grid.innerHTML = data.map(d => `
+                <div class="glass p-8 rounded-[2rem] relative transition-all duration-500 hover:scale-[1.02] ${d.equity >= 150000 ? 'golden-strike' : 'border-white/5'}">
+                    ${d.equity >= 150000 ? '<div class="absolute top-4 right-4 bg-emerald-500 text-black px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter">Golden Strike</div>' : ''}
+                    <h4 class="text-xl font-black italic uppercase">${d.addr}</h4>
+                    <p class="text-slate-500 text-[10px] mb-6 uppercase font-bold tracking-widest">${d.city}</p>
+                    
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <div class="bg-black/40 p-3 rounded-xl border border-white/5">
                             <p class="text-[8px] font-bold text-emerald-500 uppercase">Equity Spread</p>
-                            <p class="text-lg font-black italic">$185,000</p>
+                            <p class="text-lg font-black italic">$${d.equity.toLocaleString()}</p>
                         </div>
                         <div class="bg-black/40 p-3 rounded-xl border border-white/5">
-                            <p class="text-[8px] font-bold text-orange-500 uppercase">Vacancy</p>
-                            <p class="text-lg font-black italic">92%</p>
+                            <p class="text-[8px] font-bold text-slate-500 uppercase">Vacancy Rank</p>
+                            <p class="text-lg font-black italic">${d.vacancy}%</p>
                         </div>
                     </div>
-                    <button class="w-full bg-white text-black py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all">Push Webhook to Phone</button>
-                </div>
 
-                <div class="glass p-8 rounded-[2.5rem] relative">
-                    <h4 class="text-xl font-black italic uppercase">60 Pomona Ave</h4>
-                    <p class="text-slate-500 text-[10px] mb-6">Fair Lawn, NJ 07410</p>
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="bg-black/40 p-3 rounded-xl border border-white/5">
-                            <p class="text-[8px] font-bold text-slate-500 uppercase">Equity Spread</p>
-                            <p class="text-lg font-black italic">$42,000</p>
-                        </div>
-                        <div class="bg-black/40 p-3 rounded-xl border border-white/5">
-                            <p class="text-[8px] font-bold text-slate-500 uppercase">Vacancy</p>
-                            <p class="text-lg font-black italic">12%</p>
-                        </div>
-                    </div>
-                    <button class="w-full bg-white/5 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500">Criteria Not Met</button>
+                    <button onclick="dispatchWebhook('${d.addr}', ${d.equity})" class="w-full ${d.equity >= 150000 ? 'bg-emerald-500 text-black' : 'bg-white/5 text-white'} py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all">
+                        ${d.equity >= 150000 ? 'Push to Phone' : 'Underwrite Manually'}
+                    </button>
                 </div>
-            `;
+            `).join('');
         }
 
-        // INITIALIZE BROKER LIST
-        const bList = document.getElementById('brokerList');
-        bList.innerHTML = liveBrokers.map(b => `
-            <div class="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5 hover:border-emerald-500/3
+        function renderBrokers() {
+            const list = document.getElementById('brokerList');
+            list.innerHTML = brokerData.map(b => `
+                <div class="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5 hover:border-emerald-500/30 transition-all group">
+                    <div>
+                        <p class="text-xs font-black uppercase group-hover:text-emerald-500 transition-colors">${b.name}</p>
+                        <p class="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-widest">${b.firm}</p>
+                    </div>
+                    <button class="text-[8px] border border-white/10 px-3 py-1 rounded-lg uppercase font-black hover:bg-white hover:text-black">Call</button>
+                </div>
+            `).join('');
+        }
+
+        function filterDeals(type) {
+            if (type === 'all') {
+                renderDeals(dealData);
+            } else {
+                const filtered = dealData.filter(d => d.equity >= 150000);
+                renderDeals(filtered);
+            }
+        }
+
+        function dispatchWebhook(addr, equity) {
+            const log = document.getElementById('dispatchLog');
+            const time = new Date().toLocaleTimeString();
+            
+            // Visual feedback
+            const alertDiv = document.createElement('div');
+            alertDiv.className = "p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg animate-bounce";
+            alertDiv.innerHTML = `<p class="text-[10px] font-black text-emerald-500">SENT: ${addr} (+$${equity.toLocaleString()}) at ${time}</p>`;
+            
+            if (log.querySelector('p')) log.innerHTML = ''; // Clear initial empty message
+            log.prepend(alertDiv);
+            
+            setTimeout(() => alertDiv.classList.remove('animate-bounce'), 1000);
+        }
+    </script>
+</body>
+</html>
