@@ -2,77 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DEALSCOPE v14.0 | Portfolio Acquisition</title>
+    <title>DEALSCOPE v14.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.browser.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fcfcfd; color: #0f172a; margin: 0; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .sidebar { background: white; border-right: 1px solid #eef0f2; width: 320px; }
-        .card { background: white; border: 1px solid #eef0f2; border-radius: 24px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
-        .card:hover { border-color: #2563eb; transform: translateY(-3px); box-shadow: 0 12px 30px -10px rgba(0,0,0,0.05); }
-        .card.active { border-color: #2563eb; background: #f8faff; ring: 1px solid #2563eb; }
-        .btn-call { background: #1a1a21; color: white; transition: 0.2s; }
-        .btn-call:hover { background: #2563eb; transform: scale(1.02); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; transition: 0.2s; cursor: pointer; }
+        .card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+        .card.active { border-color: #3b82f6; background: #eff6ff; ring: 1px solid #3b82f6; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
 
-    <aside class="sidebar flex flex-col p-8 shrink-0">
-        <div class="mb-12">
-            <h1 class="text-xl font-extrabold tracking-tighter italic">DEALSCOPE <span class="text-blue-600">v14.0</span></h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Elara Acquisition Bridge</p>
-        </div>
-
-        <div class="space-y-6">
-            <div>
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Current Command</label>
-                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p class="text-xs font-bold text-slate-700">Location: <span id="locLabel" class="text-blue-600">Awaiting Pull</span></p>
-                </div>
-            </div>
-            <button onclick="syncData()" class="w-full py-4 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">
-                Sync Location Pipeline
+    <aside class="w-80 bg-white border-r p-8 flex flex-col shrink-0">
+        <h1 class="text-xl font-extrabold italic mb-10">DEALSCOPE <span class="text-blue-600">v14.0</span></h1>
+        
+        <div class="space-y-4">
+            <button onclick="loadData()" class="w-full py-4 bg-blue-600 text-white rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-200">
+                Sync Location Data
             </button>
+            <p class="text-[10px] text-slate-400 font-bold uppercase text-center">Run elara_engine.py before syncing</p>
         </div>
 
         <div class="mt-auto p-6 bg-slate-900 rounded-[2rem] text-white">
             <div class="flex items-center gap-2 mb-2">
                 <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span class="text-[9px] font-black text-slate-400 uppercase">VoIP Bridge Active</span>
+                <span class="text-[9px] font-bold text-slate-400 uppercase">Vapi Bridge Live</span>
             </div>
-            <p class="text-[11px] opacity-70 leading-relaxed font-medium">Ready to initiate outbound AI negotiations with owners.</p>
+            <p class="text-[11px] opacity-70">Elara Agent is ready to negotiate with owners.</p>
         </div>
     </aside>
 
-    <main class="flex-1 bg-[#f9fafb] flex flex-col min-w-0">
-        <header class="h-24 px-10 border-b border-slate-100 flex items-center justify-between bg-white/50 backdrop-blur-md">
-            <input id="search" oninput="filter()" type="text" placeholder="Search by owner, address, or zip..." class="w-96 bg-slate-100 border-none rounded-2xl px-6 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 transition-all outline-none">
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Leads: <span id="count" class="text-slate-900">0</span></div>
-        </header>
-
-        <div id="feed" class="flex-1 overflow-y-auto p-10 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+    <main class="flex-1 bg-slate-50 p-10 overflow-y-auto">
+        <div id="feed" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div class="col-span-full py-20 text-center opacity-30 italic text-sm">
+                Pipeline empty. Click "Sync Location Data" to begin.
             </div>
+        </div>
     </main>
 
-    <aside class="w-[440px] bg-white border-l border-slate-100 p-10 flex flex-col shadow-2xl shrink-0">
-        <div id="no-choice" class="h-full flex flex-col items-center justify-center text-center opacity-40">
-            <p class="text-xs font-bold uppercase tracking-widest">Select an Object</p>
-        </div>
-
-        <div id="choice-panel" class="hidden h-full flex flex-col">
-            <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full w-fit">Target Identified</span>
-            <h2 id="panel-addr" class="text-2xl font-extrabold text-slate-900 mt-6 leading-tight">---</h2>
-            <p id="panel-owner" class="text-sm text-slate-400 font-bold uppercase tracking-widest mt-2">---</p>
+    <aside class="w-96 bg-white border-l p-10 flex flex-col shadow-2xl shrink-0">
+        <div id="choice" class="hidden">
+            <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">Target Locked</span>
+            <h2 id="addr" class="text-2xl font-extrabold mt-6 leading-tight text-slate-900">---</h2>
+            <p id="owner" class="text-sm text-slate-400 font-bold uppercase mt-2">---</p>
             
-            <div class="my-8 py-8 border-y border-slate-50 flex flex-col gap-4">
-                <div class="flex justify-between text-xs font-bold"><span class="text-slate-400 uppercase">Zip Code</span><span id="panel-zip" class="mono text-slate-900">---</span></div>
-                <div class="flex justify-between text-xs font-bold"><span class="text-slate-400 uppercase">Category</span><span class="text-emerald-600">DISTRESSED</span></div>
-            </div>
-
-            <div class="mt-auto">
-                <button id="call-btn" class="w-full py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] btn-call shadow-xl active:scale-[0.98]">
+            <div class="mt-10 pt-10 border-t border-slate-50">
+                <button id="call" class="w-full py-5 bg-slate-900 text-white rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl">
                     Initiate Vapi Call
                 </button>
             </div>
@@ -80,57 +57,48 @@
     </aside>
 
     <script>
-        const vapi = new Vapi('YOUR_VAPI_PUBLIC_KEY');
-        let allLeads = [];
+        const vapi = new Vapi('YOUR_PUBLIC_KEY');
+        let currentLeads = [];
 
-        async function syncData() {
+        async function loadData() {
             try {
                 const res = await fetch('db.json');
-                allLeads = await res.json();
-                render(allLeads);
-                document.getElementById('locLabel').innerText = "LIVE STREAM";
+                currentLeads = await res.json();
+                render();
             } catch (e) {
-                alert("Run elara_engine.py first to pull location data!");
+                alert("db.json not found! Run the Python engine first.");
             }
         }
 
-        function render(data) {
-            document.getElementById('count').innerText = data.length;
-            document.getElementById('feed').innerHTML = data.map((l, i) => `
+        function render() {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = currentLeads.map((l, i) => `
                 <div onclick="select(${i})" id="card-${i}" class="card p-8">
                     <div class="flex justify-between items-center mb-6">
-                        <span class="text-[10px] font-black text-slate-300 uppercase">${l.zip}</span>
+                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">${l.zip}</span>
                         <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
                     </div>
-                    <h3 class="text-sm font-extrabold text-slate-900 truncate">${l.address}</h3>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">${l.owner}</p>
+                    <h3 class="text-[13px] font-extrabold text-slate-900 leading-snug">${l.address}</h3>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">${l.owner}</p>
                 </div>
             `).join('');
         }
 
         function select(i) {
-            const l = allLeads[i];
-            document.getElementById('no-choice').classList.add('hidden');
-            document.getElementById('choice-panel').classList.remove('hidden');
-            document.getElementById('panel-addr').innerText = l.address;
-            document.getElementById('panel-owner').innerText = l.owner;
-            document.getElementById('panel-zip').innerText = l.zip;
+            const l = currentLeads[i];
+            document.getElementById('choice').classList.remove('hidden');
+            document.getElementById('addr').innerText = l.address;
+            document.getElementById('owner').innerText = l.owner;
             
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             document.getElementById(`card-${i}`).classList.add('active');
 
-            document.getElementById('call-btn').onclick = () => {
+            document.getElementById('call').onclick = () => {
                 vapi.start({
                     assistantId: 'YOUR_ASSISTANT_ID',
                     assistantOverrides: { variableValues: { ownerName: l.owner, propertyAddress: l.address } }
                 });
             };
-        }
-
-        function filter() {
-            const q = document.getElementById('search').value.toLowerCase();
-            const filtered = allLeads.filter(l => l.address.toLowerCase().includes(q) || l.owner.toLowerCase().includes(q));
-            render(filtered);
         }
     </script>
 </body>
