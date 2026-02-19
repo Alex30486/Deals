@@ -2,91 +2,131 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEALSCOPE v12.5 | Functional Acquisition OS</title>
+    <title>DEALSCOPE v12.6 | Elara AI Command</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;900&display=swap');
-        body { font-family: 'Outfit', sans-serif; background: #020617; color: #f8fafc; margin: 0; }
+        body { font-family: 'Outfit', sans-serif; background: #020617; color: #f8fafc; overflow: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .golden-strike { border: 2px solid #10b981; box-shadow: 0 0 25px rgba(16, 185, 129, 0.2); }
-        .scroll-custom::-webkit-scrollbar { width: 4px; }
-        .scroll-custom::-webkit-scrollbar-track { background: transparent; }
-        .scroll-custom::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        .blink { animation: blinker 1.5s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .elara-glow { border: 1px solid #8b5cf6; box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+        .strike { border: 1px solid #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+        @keyframes pulse-purple { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .ai-pulse { animation: pulse-purple 2s infinite; }
     </style>
 </head>
-<body>
+<body class="h-screen flex flex-col">
 
-    <nav class="p-4 border-b border-white/5 glass sticky top-0 z-50 flex justify-between items-center">
-        <div class="flex items-center gap-4">
-            <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">DEALSCOPE <span class="text-emerald-500">v12.5</span></h1>
-            <div class="h-6 w-[1px] bg-white/10"></div>
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 blink"></span>
-                <span class="text-[9px] mono text-emerald-500 tracking-widest uppercase font-bold">Bridge: Active</span>
+    <nav class="p-4 border-b border-white/5 glass flex justify-between items-center">
+        <div class="flex items-center gap-6">
+            <h1 class="text-xl font-black italic tracking-tighter uppercase">DEALSCOPE <span class="text-violet-500">v12.6</span></h1>
+            <div class="flex items-center gap-2 bg-violet-500/10 px-3 py-1 rounded-full border border-violet-500/30">
+                <div class="w-2 h-2 bg-violet-500 rounded-full ai-pulse"></div>
+                <span class="text-[9px] mono font-bold text-violet-400 uppercase tracking-widest">Elara AI: Connected</span>
             </div>
         </div>
-        <div class="flex items-center gap-3">
-            <label class="text-[10px] mono text-slate-500 font-bold">SELECT SECTOR:</label>
-            <select id="zipFilter" onchange="updateUI()" class="bg-black/40 border border-white/10 rounded px-2 py-1 text-[10px] mono text-white focus:border-emerald-500 outline-none">
-                <option value="ALL">ALL ZIPS</option>
+        <div class="flex items-center gap-4">
+            <select id="zipSelector" onchange="syncData()" class="bg-black border border-white/10 rounded px-3 py-1 text-[10px] mono outline-none focus:border-violet-500">
                 <option value="19148">19148 (South Philly)</option>
                 <option value="19139">19139 (West Philly)</option>
-                <option value="19124">19124 (Frankford)</option>
-                <option value="10604">10604 (White Plains)</option>
-                <option value="06702">06702 (Waterbury)</option>
+                <option value="10605">10605 (White Plains)</option>
+                <option value="07410">07410 (Fair Lawn)</option>
             </select>
+            <button class="bg-white text-black px-4 py-1.5 rounded text-[10px] font-black uppercase hover:bg-violet-500 transition-all">Export Leads</button>
         </div>
     </nav>
 
-    <main class="p-6 max-w-[1600px] mx-auto grid grid-cols-12 gap-6 h-[calc(100vh-80px)]">
+    <div class="flex-1 grid grid-cols-12 overflow-hidden">
         
-        <div class="col-span-12 lg:col-span-8 flex flex-col gap-6 overflow-hidden">
-            <div class="flex justify-between items-end">
-                <h2 class="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Blight/Vacancy Real-Time Feed</h2>
-                <span id="propCount" class="text-[10px] mono text-emerald-500">Showing 200 Assets</span>
-            </div>
+        <div class="col-span-3 border-r border-white/5 p-6 flex flex-col gap-4 overflow-y-auto">
+            <h2 class="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2">Agent Control</h2>
             
-            <div id="propertyGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto scroll-custom pr-2 pb-10">
-                </div>
-        </div>
-
-        <div class="col-span-12 lg:col-span-4 flex flex-col gap-6 overflow-hidden">
-            
-            <div class="glass p-6 rounded-2xl flex flex-col h-1/2 overflow-hidden">
-                <h3 class="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-4 flex justify-between">
-                    <span>Broker Network</span>
-                    <span id="brokerCount" class="text-slate-500">100+</span>
-                </h3>
-                <div id="brokerList" class="space-y-2 overflow-y-auto scroll-custom pr-2">
-                    </div>
+            <div class="glass p-5 rounded-2xl elara-glow">
+                <p class="text-[10px] mono text-violet-400 mb-2">AI Status: Idle</p>
+                <p class="text-xs leading-relaxed text-slate-300 italic">"Ready to call brokers. Select an asset to initiate Elara's automated inquiry script."</p>
             </div>
 
-            <div class="glass p-6 rounded-2xl flex flex-col h-1/2 overflow-hidden border-orange-500/20">
-                <h3 class="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-4">Mobile Dispatch History</h3>
-                <div id="dispatchLog" class="space-y-2 overflow-y-auto scroll-custom pr-2 text-[10px] mono">
-                    <p class="text-slate-600 italic">No dispatches sent to mobile...</p>
+            <div class="space-y-2 mt-4" id="aiActivity">
+                <p class="text-[9px] mono text-slate-600 uppercase">Activity Log:</p>
+                <div class="text-[9px] mono text-slate-400 p-2 bg-black/20 rounded border border-white/5">
+                    [System] Bridge to Twilio/VAPI secure.
                 </div>
             </div>
         </div>
-    </main>
+
+        <div class="col-span-6 p-6 overflow-y-auto scroll-smooth">
+            <div id="propFeed" class="grid grid-cols-1 gap-4">
+                </div>
+        </div>
+
+        <div class="col-span-3 border-l border-white/5 p-6 overflow-y-auto">
+            <h2 class="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-4 italic">Broker Directory</h2>
+            <div id="brokerFeed" class="space-y-3">
+                </div>
+        </div>
+    </div>
 
     <script>
-        // DATA INJECTED FROM YOUR CSV FILES
-        const properties = [
-            { address: "2525 S BEULAH ST", zip: "19148", rank: 0.5, owner: "BARR DENNIS", equity: 184500 },
-            { address: "5651 N 16TH ST", zip: "19141", rank: 0.5, owner: "ODUD NATALIYA", equity: 162000 },
-            { address: "835 GRANITE ST", zip: "19124", rank: 0.5, owner: "GENERAL STATE AUTH", equity: 215000 },
-            { address: "4939 CHESTNUT ST", zip: "19139", rank: 0.5, owner: "WILLIAMS MARSHALL", equity: 198000 },
-            { address: "5024 N 5TH ST", zip: "19120", rank: 0.5, owner: "KAO PAUL", equity: 145000 },
-            { address: "3235 N 22ND ST", zip: "19132", rank: 0.5, owner: "WRIGHT KEVIN", equity: 228000 }
+        // CORE DATASETS FROM UPLOADS
+        const assets = [
+            { address: "2525 S BEULAH ST", zip: "19148", owner: "BARR DENNIS", equity: 185000, vacancy: "High" },
+            { address: "4939 CHESTNUT ST", zip: "19139", owner: "WILLIAMS MARSHALL", equity: 198000, vacancy: "High" },
+            { address: "278 MAMARONECK AVE", zip: "10605", owner: "COLDWELL BANKER", equity: 15000, vacancy: "Low" }
         ];
 
         const brokers = [
-            { name: "ACOCELLA BETH A", firm: "COLDWELL BANKER", zip: "10605", type: "ASSOCIATE BROKER" },
-            { name: "RUBIN MOSES J", firm: "NEW RULE LLC", zip: "10901", type: "LLC BROKER" },
-            { name: "DJELEVIC GLORIA", firm: "DJELEVIC GLORIA", zip: "07410", type: "INDIVIDUAL BROKER" },
-            { name: "AUER JANET", firm: "COLDWELL BANKER", zip:
+            { name: "ACOCELLA BETH A", firm: "COLDWELL BANKER", zip: "10605", status: "Active" },
+            { name: "RUBIN MOSES J", firm: "NEW RULE LLC", zip: "19148", status: "Active" }
+        ];
+
+        function syncData() {
+            const zip = document.getElementById('zipSelector').value;
+            
+            // Render Props
+            const pFeed = document.getElementById('propFeed');
+            const filteredProps = assets.filter(a => a.zip === zip);
+            pFeed.innerHTML = (filteredProps.length ? filteredProps : assets).map(a => `
+                <div class="glass p-6 rounded-[2rem] transition-all hover:bg-white/5 ${a.equity > 150000 ? 'strike' : ''}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-black italic uppercase">${a.address}</h3>
+                            <p class="text-[9px] mono text-slate-500">OWNER: ${a.owner} | ZIP: ${a.zip}</p>
+                        </div>
+                        <span class="text-[10px] font-black text-emerald-500">$${a.equity.toLocaleString()} Equity</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="triggerElara('${a.address}', 'Broker')" class="flex-1 bg-violet-600 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-violet-400 transition-all">
+                            Dispatch Elara AI
+                        </button>
+                        <button class="px-4 py-2 border border-white/10 rounded-xl text-[10px] font-black uppercase hover:bg-white hover:text-black">Skip</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Render Brokers
+            document.getElementById('brokerFeed').innerHTML = brokers.map(b => `
+                <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p class="text-[10px] font-black uppercase">${b.name}</p>
+                    <p class="text-[8px] text-slate-500 font-bold mt-1 uppercase">${b.firm}</p>
+                </div>
+            `).join('');
+        }
+
+        function triggerElara(addr, target) {
+            const log = document.getElementById('aiActivity');
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            const div = document.createElement('div');
+            div.className = "text-[9px] mono text-violet-400 p-2 bg-violet-500/5 rounded border border-violet-500/20 mb-2 animate-pulse";
+            div.innerHTML = `[${time}] ELARA: Initiating call for ${addr}... Status: Dialing ${target}`;
+            
+            log.prepend(div);
+            
+            // Link Simulator
+            window.alert(`Elara AI is now calling the listing agent for ${addr}. Check your Mobile Log for the transcript.`);
+        }
+
+        syncData();
+    </script>
+</body>
+</html>
